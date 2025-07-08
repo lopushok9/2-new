@@ -1,101 +1,591 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bird Identifier</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Загрузка и анализ изображений</title>
     <style>
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none; /* Скрыт по умолчанию */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fffe 0%, #f0f9f4 100%);
+            color: #2d3748;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
         }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        h1 {
+            color: #047857;
+            margin-bottom: 16px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        .unified-input-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 6px 16px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .unified-input-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+            border-radius: 24px 24px 0 0;
+        }
+
+        .input-wrapper {
+            padding: 24px;
+            position: relative;
+        }
+
+        .main-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #2d3748;
+            background: transparent;
+            resize: none;
+            font-family: inherit;
+            min-height: 24px;
+            max-height: 200px;
+            padding: 16px 60px 16px 16px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #f8fffe 0%, #f0f9f4 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
+        }
+
+        .main-input:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+        }
+
+        .main-input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .input-actions {
+            position: absolute;
+            right: 32px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .action-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            color: #6b7280;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+
+        .action-button:hover {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+
+        .file-button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            color: #6b7280;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+        }
+
+        .file-button:hover {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-button:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: scale(1.05);
+        }
+
+        .submit-button:hover::before {
+            left: 100%;
+        }
+
+        .submit-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .file-preview {
+            margin-top: 16px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border-radius: 12px;
+            border: 1px solid #a7f3d0;
+            display: none;
+        }
+
+        .file-preview.show {
+            display: block;
+        }
+
+        .file-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #065f46;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .result {
+            margin-top: 32px;
+            padding: 24px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border-left: 4px solid #10b981;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #10b981, #34d399);
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-success::before {
+            background: linear-gradient(90deg, #10b981, #34d399);
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-error::before {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #10b981;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #10b981;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Анимации */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .unified-input-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 16px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .input-wrapper {
+                padding: 16px;
+            }
+            
+            .main-input {
+                padding: 12px 50px 12px 12px;
+                font-size: 1rem;
+            }
+            
+            .input-actions {
+                right: 24px;
+            }
+            
+            .action-button,
+            .file-button,
+            .submit-button {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        /* Скрытие скроллбара для textarea */
+        .main-input::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .main-input::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .main-input::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 2px;
+        }
+
+        .main-input::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Upload an Image to Identify a Bird</h1>
-        <form id="uploadForm" enctype="multipart/form-data" autocomplete="off">
-            <div class="form-group">
-                <label for="image">Upload image</label>
-                <input type="file" id="image" name="image" accept="image/*" />
+    <div class="main-container">
+        <div class="header">
+            <h1>Загрузка и анализ изображений</h1>
+        </div>
+        
+        <div class="content-area">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="unified-input-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            class="main-input" 
+                            placeholder="Опишите что вы хотите узнать об изображении..."
+                            rows="1"
+                            name="message"
+                            id="messageInput"
+                        ></textarea>
+                        
+                        <div class="input-actions">
+                            <div class="file-input-wrapper">
+                                <input type="file" name="image" id="fileInput" class="file-input" accept="image/*">
+                                <button type="button" class="file-button" onclick="document.getElementById('fileInput').click()">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17,8 12,3 7,8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <button type="submit" class="submit-button" id="submitBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-preview" id="filePreview">
+                        <img id="previewImage" src="" alt="Предпросмотр">
+                        <div class="file-info">
+                            <span id="fileName"></span>
+                            <button type="button" onclick="removeFile()" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px;">✕</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Анализ изображения...
             </div>
-            <div class="form-group">
-                <label for="message">Message</label>
-                <input type="text" id="message" name="message" placeholder="Optional: ask a question about the image">
-            </div>
-            <button type="submit" id="submitBtn">Analyze</button>
-        </form>
-        <div class="preview" id="preview"></div>
-        <div class="loader" id="loader"></div> <!-- Спиннер -->
-        <div class="result" id="resultDiv"></div>
-        <div id="alertContainer"></div>
+            
+            <div class="alert alert-success" id="successAlert"></div>
+            <div class="alert alert-error" id="errorAlert"></div>
+            
+            <div class="result" id="result"></div>
+        </div>
     </div>
-    <script>
-        const uploadForm = document.getElementById('uploadForm');
-        const imageInput = document.getElementById('image');
-        const preview = document.getElementById('preview');
-        const resultDiv = document.getElementById('resultDiv');
-        const alertContainer = document.getElementById('alertContainer');
-        const submitBtn = document.getElementById('submitBtn');
-        const loader = document.getElementById('loader'); // Находим спиннер
 
-        imageInput.addEventListener('change', function() {
-            preview.innerHTML = '';
-            const file = this.files[0];
+    <script>
+        let selectedFile = null;
+
+        // Обработка выбора файла
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
             if (file) {
+                selectedFile = file;
+                
+                // Показать предпросмотр
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" />`;
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('fileName').textContent = file.name;
+                    document.getElementById('filePreview').classList.add('show');
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        function showAlert(message, type = 'success') {
-            alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-            setTimeout(() => { alertContainer.innerHTML = ''; }, 3000);
+        // Удаление файла
+        function removeFile() {
+            selectedFile = null;
+            document.getElementById('filePreview').classList.remove('show');
+            document.getElementById('fileInput').value = '';
         }
 
-        uploadForm.addEventListener('submit', async function(e) {
+        // Обработка отправки формы
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            resultDiv.textContent = '';
-            submitBtn.disabled = true;
-            loader.style.display = 'block'; // Показываем спиннер
-            showAlert('AI is thinking... this may take a moment.', 'success');
-            const formData = new FormData(uploadForm);
+            
+            const formData = new FormData(this);
+            const message = document.getElementById('messageInput').value;
+            
+            if (!selectedFile && !message.trim()) {
+                showAlert('Пожалуйста, загрузите изображение или введите сообщение', 'error');
+                return;
+            }
+
+            // Показать загрузку
+            document.getElementById('loading').classList.add('show');
+            hideAlert();
+            hideResult();
+
             try {
                 const response = await fetch('/', {
                     method: 'POST',
                     body: formData
                 });
+
                 const data = await response.json();
-                console.log('Full response from server:', data); // <-- Вот эта строка для отладки
-                if (data.error) {
-                    showAlert(data.error, 'error');
-                } else if (data.choices && data.choices[0] && data.choices[0].message) {
-                    resultDiv.innerHTML = `<strong>Result:</strong><br>${data.choices[0].message.content}`;
-                    showAlert('Analysis completed!', 'success');
+                
+                if (response.ok) {
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        showResult(data.choices[0].message.content);
+                    } else {
+                        showAlert('Неожиданный формат ответа от сервера', 'error');
+                    }
                 } else {
-                    showAlert('Invalid response format from server', 'error');
+                    showAlert(data.error || 'Ошибка при обработке запроса', 'error');
                 }
-            } catch (err) {
-                showAlert('Error: ' + err.message, 'error');
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Ошибка сети: ' + error.message, 'error');
             } finally {
-                submitBtn.disabled = false;
-                loader.style.display = 'none'; // Скрываем спиннер
+                document.getElementById('loading').classList.remove('show');
+            }
+        });
+
+        // Показать уведомление
+        function showAlert(message, type) {
+            const alertElement = document.getElementById(type + 'Alert');
+            alertElement.textContent = message;
+            alertElement.classList.add('show');
+            
+            // Скрыть другие уведомления
+            const otherAlert = document.getElementById(type === 'success' ? 'errorAlert' : 'successAlert');
+            otherAlert.classList.remove('show');
+        }
+
+        // Скрыть уведомления
+        function hideAlert() {
+            document.getElementById('successAlert').classList.remove('show');
+            document.getElementById('errorAlert').classList.remove('show');
+        }
+
+        // Показать результат
+        function showResult(text) {
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = text;
+            resultElement.classList.add('show');
+        }
+
+        // Скрыть результат
+        function hideResult() {
+            document.getElementById('result').classList.remove('show');
+        }
+
+        // Автоматическое изменение размера текстового поля
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+        });
+
+        // Отправка по Enter (но не Shift+Enter)
+        document.getElementById('messageInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('uploadForm').dispatchEvent(new Event('submit'));
             }
         });
     </script>
 </body>
-</html> 
+</html>

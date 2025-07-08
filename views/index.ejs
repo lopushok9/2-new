@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bird Identifier</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none; /* Скрыт по умолчанию */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload an Image to Identify a Bird</h1>
+        <form id="uploadForm" enctype="multipart/form-data" autocomplete="off">
+            <div class="form-group">
+                <label for="image">Upload image</label>
+                <input type="file" id="image" name="image" accept="image/*" />
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <input type="text" id="message" name="message" placeholder="Optional: ask a question about the image">
+            </div>
+            <button type="submit" id="submitBtn">Analyze</button>
+        </form>
+        <div class="preview" id="preview"></div>
+        <div class="loader" id="loader"></div> <!-- Спиннер -->
+        <div class="result" id="resultDiv"></div>
+        <div id="alertContainer"></div>
+    </div>
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const imageInput = document.getElementById('image');
+        const preview = document.getElementById('preview');
+        const resultDiv = document.getElementById('resultDiv');
+        const alertContainer = document.getElementById('alertContainer');
+        const submitBtn = document.getElementById('submitBtn');
+        const loader = document.getElementById('loader'); // Находим спиннер
+
+        imageInput.addEventListener('change', function() {
+            preview.innerHTML = '';
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Preview" />`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function showAlert(message, type = 'success') {
+            alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => { alertContainer.innerHTML = ''; }, 3000);
+        }
+
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            resultDiv.textContent = '';
+            submitBtn.disabled = true;
+            loader.style.display = 'block'; // Показываем спиннер
+            showAlert('AI is thinking... this may take a moment.', 'success');
+            const formData = new FormData(uploadForm);
+            try {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                console.log('Full response from server:', data); // <-- Вот эта строка для отладки
+                if (data.error) {
+                    showAlert(data.error, 'error');
+                } else if (data.choices && data.choices[0] && data.choices[0].message) {
+                    resultDiv.innerHTML = `<strong>Result:</strong><br>${data.choices[0].message.content}`;
+                    showAlert('Analysis completed!', 'success');
+                } else {
+                    showAlert('Invalid response format from server', 'error');
+                }
+            } catch (err) {
+                showAlert('Error: ' + err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                loader.style.display = 'none'; // Скрываем спиннер
+            }
+        });
+    </script>
+</body>
+</html> 

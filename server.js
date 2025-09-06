@@ -17,8 +17,6 @@ app.set('view engine', 'ejs');
 
 // Папка для статических файлов (если есть)
 app.use(express.static(path.join(__dirname, 'public')));
-// Serve static files from root directory (for logo.png)
-app.use(express.static(__dirname));
 
 // Multer — для обработки файлов в памяти (т.к. на Vercel нет диска)
 const storage = multer.memoryStorage();
@@ -32,26 +30,6 @@ const upload = multer({
 // Маршрут GET /
 app.get('/', (req, res) => {
   res.render('index', { historyItems: [] });
-});
-
-// Serve about page
-app.get('/about.html', (req, res) => {
-  const aboutPath = path.join(__dirname, 'about.html');
-  if (fs.existsSync(aboutPath)) {
-    res.sendFile(aboutPath);
-  } else {
-    res.status(404).send('About page not found. Please create about.html in the root directory.');
-  }
-});
-
-// Alternative route for about page (without .html extension)
-app.get('/about', (req, res) => {
-  const aboutPath = path.join(__dirname, 'about.html');
-  if (fs.existsSync(aboutPath)) {
-    res.sendFile(aboutPath);
-  } else {
-    res.status(404).send('About page not found. Please create about.html in the root directory.');
-  }
 });
 
 // POST-запрос с изображением или текстом

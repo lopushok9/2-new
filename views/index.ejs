@@ -6,26 +6,29 @@
     <title>What bird</title>
     <style>
         .logo-container {
-            position: static; /* Изменено */
+            position: static;
             top: auto;
             left: auto;
             z-index: auto;
         }
         .logo-container img {
-            width: 80px; /* Изменено */
-            height: 80px; /* Добавлено */
-            border-radius: 50%; /* Добавлено */
-            object-fit: cover; /* Добавлено */
-            transition: transform 0.3s ease;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            object-fit: cover;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.6);
         }
         .logo-container img:hover {
-            transform: scale(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         /* Контейнер для логотипа и кнопки */
         .header-controls {
             position: absolute;
-            top: 16px; /* Подвинул выше */
+            top: 20px;
             left: 24px;
             right: 24px;
             display: flex;
@@ -34,7 +37,7 @@
             z-index: 10;
         }
 
-        /* Улучшенные стили для бокового меню */
+        /* Современные стили для бокового меню */
         .sidenav {
             height: 100%;
             width: 0;
@@ -42,93 +45,94 @@
             z-index: 20;
             top: 0;
             right: 0;
-            background-color: rgba(255, 255, 255, 0.95); /* Более прозрачный фон */
-            backdrop-filter: blur(15px); /* Эффект размытия */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+            backdrop-filter: blur(20px);
             overflow-x: hidden;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding-top: 80px; /* Увеличил отступ */
-            border-left: 1px solid rgba(229, 231, 235, 0.7);
-            box-shadow: -5px 0 15px rgba(0,0,0,0.05); /* Легкая тень */
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-top: 80px;
+            border-left: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: -10px 0 25px rgba(0, 0, 0, 0.08);
         }
 
         .sidenav a {
-            padding: 16px 16px 16px 32px; /* Увеличил отступы */
+            padding: 18px 32px;
             text-decoration: none;
-            font-size: 1.2rem; /* Увеличил размер шрифта */
-            font-weight: 600; /* Сделал шрифт более плотным */
-            color: #2d3748;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #475569;
             display: block;
-            transition: 0.3s;
-            font-family: inherit; /* Используем основной шрифт */
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sidenav a::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent); /* Эффект при наведении */
-            transition: left 0.4s ease;
+            font-family: inherit;
+            margin: 8px 24px;
+            border-radius: 12px;
+            letter-spacing: -0.01em;
+            text-align: left;
         }
 
         .sidenav a:hover {
             color: #047857;
         }
 
-        .sidenav a:hover::before {
-            left: 0;
-        }
-
         .sidenav .close-btn {
             position: absolute;
             top: 20px;
-            right: 25px;
-            font-size: 36px;
-            color: #9ca3af;
-            transition: 0.3s;
+            right: 20px;
+            width: 32px;
+            height: 32px;
             background: none;
             border: none;
+            color: #64748b;
             cursor: pointer;
-            padding: 5px;
-            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 300;
         }
+        
         .sidenav .close-btn:hover {
-            color: #2d3748;
-            background-color: rgba(0,0,0,0.05);
+            color: #334155;
         }
 
         .hamburger-btn {
-            position: static; /* Изменено */
+            position: static;
             top: auto;
             right: auto;
             z-index: auto;
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(229, 231, 235, 0.3);
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            justify-content: space-around;
-            width: 28px; /* Немного изменил размер */
-            height: 22px;
+            justify-content: center;
+            align-items: center;
+            width: 44px;
+            height: 44px;
             padding: 0;
-            transition: transform 0.3s ease;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
         .hamburger-btn:hover {
-            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.95);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .hamburger-btn span {
             display: block;
-            width: 100%;
-            height: 3px;
-            background-color: #2d3748;
-            border-radius: 3px; /* Закругленные полоски */
+            width: 16px;
+            height: 2px;
+            background-color: #4a5568;
+            border-radius: 1px;
+            margin: 2px 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .hamburger-btn:hover span {
+            background-color: #2d3748;
+        }
+
         .loader {}
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
@@ -493,6 +497,25 @@
         @media (max-width: 768px) {
             .main-container {
                 padding: 16px;
+            }
+            
+            .header-controls {
+                left: 16px;
+                right: 16px;
+            }
+            
+            .logo-container img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .hamburger-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .hamburger-btn span {
+                width: 14px;
             }
             
             h1 {

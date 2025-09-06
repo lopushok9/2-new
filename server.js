@@ -48,7 +48,7 @@ app.post('/', upload.single('image'), async (req, res) => {
       const imageUrl = `data:${imageFile.mimetype};base64,${base64Image}`;
 
       requestBody = {
-        model: "meta-llama/llama-3.2-11b-vision-instruct:free",
+        model: "meta-llama/llama-4-maverick:free",
         messages: [
           {
             role: "user",
@@ -61,7 +61,7 @@ app.post('/', upload.single('image'), async (req, res) => {
       };
     } else if (message) {
       requestBody = {
-        model: "meta-llama/llama-3.2-11b-instruct:free",
+        model: "meta-llama/llama-4-scout:free",
         messages: [{ role: "user", content: message }]
       };
     } else {

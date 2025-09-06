@@ -3,114 +3,97 @@ const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Настройка пути к шаблонам
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Serve static files from multiple directories
-app.use(express.static('public'));
-app.use(express.static('.')); // This will serve files from root directory (including logo.png)
+// Папка для статических файлов (если есть)
+app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from root directory (for logo.png)
+app.use(express.static(__dirname));
 
-// Ensure required directories exist
-const uploadDir = 'uploads';
-const historyDir = 'history';
-[uploadDir, historyDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-    }
-});
-
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({ 
+// Multer — для обработки файлов в памяти (т.к. на Vercel нет диска)
+const storage = multer.memoryStorage();
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
 
-// Routes - важен порядок маршрутов!
+// Маршрут GET /
+app.get('/', (req, res) => {
+  res.render('index', { historyItems: [] });
+});
 
-// API routes должны идти ПЕРВЫМИ
-// Get history item details
-app.get('/api/history/:id', (req, res) => {
-  try {
-    const filePath = path.join(historyDir, `${req.params.id}.json`);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: 'History item not found' });
-    }
-    const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    res.json(content);
-  } catch (error) {
-    res.status(500).json({ error: 'Error retrieving history item' });
+// Serve about page
+app.get('/about.html', (req, res) => {
+  const aboutPath = path.join(__dirname, 'about.html');
+  if (fs.existsSync(aboutPath)) {
+    res.sendFile(aboutPath);
+  } else {
+    res.status(404).send('About page not found. Please create about.html in the root directory.');
   }
 });
 
-// AI endpoint
-app.post('/api/analyze', upload.single('image'), async (req, res) => {
+// Alternative route for about page (without .html extension)
+app.get('/about', (req, res) => {
+  const aboutPath = path.join(__dirname, 'about.html');
+  if (fs.existsSync(aboutPath)) {
+    res.sendFile(aboutPath);
+  } else {
+    res.status(404).send('About page not found. Please create about.html in the root directory.');
+  }
+});
+
+// POST-запрос с изображением или текстом
+app.post('/', upload.single('image'), async (req, res) => {
   try {
-    console.log('Received request for image analysis');
+    console.log('Received request body:', req.body);
+    console.log('Received file:', req.file ? req.file.originalname : 'No file');
+
     const message = req.body.message;
     const imageFile = req.file;
-    
-    if (!imageFile) {
-      console.error('No image file provided');
-      return res.status(400).json({ error: 'No image file provided' });
+
+    let requestBody;
+
+    if (imageFile) {
+      const base64Image = imageFile.buffer.toString('base64');
+      const imageUrl = `data:${imageFile.mimetype};base64,${base64Image}`;
+
+      requestBody = {
+        model: "meta-llama/llama-3.2-11b-vision-instruct:free",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: message || "What is in this image?" },
+              { type: "image_url", image_url: { url: imageUrl } }
+            ]
+          }
+        ]
+      };
+    } else if (message) {
+      requestBody = {
+        model: "meta-llama/llama-3.2-11b-instruct:free",
+        messages: [{ role: "user", content: message }]
+      };
+    } else {
+      return res.status(400).json({ error: 'No image or message provided' });
     }
 
-    console.log('Image file received:', imageFile.filename);
-    
-    // Read the file and convert to base64
-    const imageBuffer = fs.readFileSync(imageFile.path);
-    const base64Image = imageBuffer.toString('base64');
-    const imageUrl = `data:${imageFile.mimetype};base64,${base64Image}`;
-    
-    // Create a smaller preview image (store first 100KB of base64)
-    const preview = base64Image.substring(0, 100000);
-    
-    // Prepare the request body
-    const requestBody = {
-      model: "meta-llama/llama-3.2-11b-vision-instruct:free",
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: message || "What is in this image? Please provide a detailed description."
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageUrl
-              }
-            }
-          ]
-        }
-      ]
-    };
-
-    console.log('Making request to OpenRouter API');
-    
-    // Make request to OpenRouter API
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": "Bearer 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",
-        "HTTP-Referer": "http://localhost:3000",
-        "X-Title": "AI Image Analysis",
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(requestBody)
@@ -126,111 +109,21 @@ app.post('/api/analyze', upload.single('image'), async (req, res) => {
     }
 
     const data = await response.json();
-    console.log('Received response from OpenRouter API');
-    
-    // Save to history
-    const historyItem = {
-      timestamp: Date.now(),
-      message: message || 'No message',
-      preview: `data:${imageFile.mimetype};base64,${preview}`,
-      result: data.choices[0].message.content,
-      fullImage: imageUrl
-    };
-    
-    const historyId = Date.now().toString();
-    fs.writeFileSync(
-      path.join(historyDir, `${historyId}.json`),
-      JSON.stringify(historyItem, null, 2)
-    );
-    
-    // Clean up the uploaded file
-    fs.unlinkSync(imageFile.path);
-    
-    res.json({ ...data, historyId });
+    res.json(data);
+
   } catch (error) {
-    console.error('Error in /api/analyze:', error);
-    res.status(500).json({ 
+    console.error('Error in POST /:', error);
+    res.status(500).json({
       error: 'Internal server error',
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: error.message
     });
-  }
-});
-
-// ЗАТЕМ идут HTML маршруты
-// Main page
-app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send('Index page not found');
-  }
-});
-
-// Serve about page
-app.get('/about.html', (req, res) => {
-  const aboutPath = path.join(__dirname, 'about.html');
-  if (fs.existsSync(aboutPath)) {
-    res.sendFile(aboutPath);
-  } else {
-    res.status(404).send('About page not found');
-  }
-});
-
-// Alternative route for about page (without .html extension)
-app.get('/about', (req, res) => {
-  const aboutPath = path.join(__dirname, 'about.html');
-  if (fs.existsSync(aboutPath)) {
-    res.sendFile(aboutPath);
-  } else {
-    res.status(404).send('About page not found');
-  }
-});
-
-// Catch-all route for serving static HTML files (должен быть ПОСЛЕДНИМ)
-app.get('*.html', (req, res) => {
-  const filePath = path.join(__dirname, req.path);
-  if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.status(404).send('Page not found');
   }
 });
 
 const PORT = process.env.PORT || 3000;
-let server;
-
-// Function to start the server
-function startServer(port) {
-  return new Promise((resolve, reject) => {
-    server = app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-      console.log(`Main page: http://localhost:${port}`);
-      console.log(`About page: http://localhost:${port}/about.html`);
-      resolve();
-    }).on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.log(`Port ${port} is busy, trying ${port + 1}`);
-        resolve(startServer(port + 1));
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    process.exit(0);
-  });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
-// Start the server
-startServer(PORT).catch(err => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+// Export the app for Vercel
+module.exports = app;

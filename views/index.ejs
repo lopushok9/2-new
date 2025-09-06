@@ -755,11 +755,25 @@
                     body: formData
                 });
 
+                // Проверяем тип контента ответа
+                const contentType = response.headers.get('content-type');
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.error('Server returned HTML instead of JSON:', textResponse);
+                    showAlert('Сервер вернул неожиданный тип ответа. Проверьте консоль для деталей.', 'error');
+                    return;
+                }
+
                 const data = await response.json();
                 
                 if (response.ok) {
                     if (data.choices && data.choices[0] && data.choices[0].message) {
                         showResult(data.choices[0].message.content);
+                        // Очистить форму после успешной отправки
+                        removeFile();
+                        document.getElementById('messageInput').value = '';
+                        document.getElementById('messageInput').style.height = 'auto';
                     } else {
                         showAlert('Неожиданный формат ответа от сервера', 'error');
                     }
@@ -768,7 +782,11 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showAlert('Ошибка сети: ' + error.message, 'error');
+                if (error.message.includes('JSON')) {
+                    showAlert('Сервер вернул неверный формат ответа', 'error');
+                } else {
+                    showAlert('Ошибка сети: ' + error.message, 'error');
+                }
             } finally {
                 document.getElementById('loading').classList.remove('show');
             }

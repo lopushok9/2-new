@@ -5,6 +5,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>What bird</title>
     <style>
+        .logo-container {
+            position: static; /* Изменено */
+            top: auto;
+            left: auto;
+            z-index: auto;
+        }
+        .logo-container img {
+            width: 80px; /* Изменено */
+            height: 80px; /* Добавлено */
+            border-radius: 50%; /* Добавлено */
+            object-fit: cover; /* Добавлено */
+            transition: transform 0.3s ease;
+        }
+        .logo-container img:hover {
+            transform: scale(1.1);
+        }
+
+        /* Контейнер для логотипа и кнопки */
+        .header-controls {
+            position: absolute;
+            top: 16px; /* Подвинул выше */
+            left: 24px;
+            right: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Улучшенные стили для бокового меню */
+        .sidenav {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 20;
+            top: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.95); /* Более прозрачный фон */
+            backdrop-filter: blur(15px); /* Эффект размытия */
+            overflow-x: hidden;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding-top: 80px; /* Увеличил отступ */
+            border-left: 1px solid rgba(229, 231, 235, 0.7);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.05); /* Легкая тень */
+        }
+
+        .sidenav a {
+            padding: 16px 16px 16px 32px; /* Увеличил отступы */
+            text-decoration: none;
+            font-size: 1.2rem; /* Увеличил размер шрифта */
+            font-weight: 600; /* Сделал шрифт более плотным */
+            color: #2d3748;
+            display: block;
+            transition: 0.3s;
+            font-family: inherit; /* Используем основной шрифт */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidenav a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent); /* Эффект при наведении */
+            transition: left 0.4s ease;
+        }
+
+        .sidenav a:hover {
+            color: #047857;
+        }
+
+        .sidenav a:hover::before {
+            left: 0;
+        }
+
+        .sidenav .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 36px;
+            color: #9ca3af;
+            transition: 0.3s;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+        }
+        .sidenav .close-btn:hover {
+            color: #2d3748;
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .hamburger-btn {
+            position: static; /* Изменено */
+            top: auto;
+            right: auto;
+            z-index: auto;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 28px; /* Немного изменил размер */
+            height: 22px;
+            padding: 0;
+            transition: transform 0.3s ease;
+        }
+        .hamburger-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: #2d3748;
+            border-radius: 3px; /* Закругленные полоски */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .loader {}
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #f8fffe 0%, #f0f9f4 100%);
@@ -15,154 +140,6 @@
             line-height: 1.6;
             display: flex;
             flex-direction: column;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
-            position: relative;
-            z-index: 100;
-        }
-
-        .logo {
-            height: 40px;
-            width: auto;
-            transition: transform 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .hamburger {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-        }
-
-        .hamburger:hover {
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .hamburger span {
-            display: block;
-            height: 3px;
-            width: 24px;
-            background: #047857;
-            margin: 3px 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 2px;
-        }
-
-        .hamburger.active span:nth-child(1) {
-            transform: rotate(45deg) translate(6px, 6px);
-        }
-
-        .hamburger.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .hamburger.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(6px, -6px);
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100vh;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            overflow-y: auto;
-        }
-
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-header {
-            padding: 24px;
-            border-bottom: 1px solid rgba(16, 185, 129, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sidebar-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #047857;
-        }
-
-        .close-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            color: #6b7280;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .close-btn:hover {
-            background: rgba(16, 185, 129, 0.1);
-            color: #047857;
-        }
-
-        .sidebar-menu {
-            padding: 16px 0;
-        }
-
-        .menu-item {
-            display: block;
-            padding: 16px 24px;
-            color: #374151;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-        }
-
-        .menu-item:hover {
-            background: rgba(16, 185, 129, 0.05);
-            color: #047857;
-            border-left-color: #10b981;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 999;
-        }
-
-        .overlay.show {
-            opacity: 1;
-            visibility: visible;
         }
 
         .main-container {
@@ -514,24 +491,6 @@
 
         /* Адаптивность */
         @media (max-width: 768px) {
-            .top-bar {
-                padding: 12px 16px;
-            }
-
-            .logo {
-                height: 32px;
-            }
-
-            .hamburger {
-                width: 36px;
-                height: 36px;
-            }
-
-            .sidebar {
-                width: 280px;
-                right: -280px;
-            }
-
             .main-container {
                 padding: 16px;
             }
@@ -581,33 +540,25 @@
     </style>
 </head>
 <body>
-    <!-- Top Navigation Bar -->
-    <div class="top-bar">
-        <img src="logo.png" alt="What Bird Logo" class="logo">
-        
-        <button class="hamburger" id="hamburgerBtn">
+    <div class="header-controls">
+        <div class="logo-container">
+            <img src="/logo.png" alt="Logo">
+        </div>
+
+        <!-- Кнопка меню -->
+        <button class="hamburger-btn" id="hamburgerBtn">
             <span></span>
             <span></span>
             <span></span>
         </button>
     </div>
 
-    <!-- Overlay for mobile -->
-    <div class="overlay" id="overlay"></div>
-
-    <!-- Sidebar Menu -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">Menu</div>
-            <button class="close-btn" id="closeBtn">&times;</button>
-        </div>
-        
-        <nav class="sidebar-menu">
-            <a href="about.html" class="menu-item">ABOUT</a>
-        </nav>
+    <!-- Боковая панель -->
+    <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="close-btn" id="closeBtn">&times;</a>
+        <a href="#">About</a>
     </div>
-
-    <div class="main-container">
+    <div class="container">
         <div class="header">
             <h1>What bird</h1>
         </div>
@@ -670,44 +621,6 @@
     <script>
         let selectedFile = null;
 
-        // Menu functionality
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const closeBtn = document.getElementById('closeBtn');
-
-        function openMenu() {
-            hamburgerBtn.classList.add('active');
-            sidebar.classList.add('open');
-            overlay.classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeMenu() {
-            hamburgerBtn.classList.remove('active');
-            sidebar.classList.remove('open');
-            overlay.classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        hamburgerBtn.addEventListener('click', () => {
-            if (sidebar.classList.contains('open')) {
-                closeMenu();
-            } else {
-                openMenu();
-            }
-        });
-
-        closeBtn.addEventListener('click', closeMenu);
-        overlay.addEventListener('click', closeMenu);
-
-        // Close menu on Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
-                closeMenu();
-            }
-        });
-
         // Обработка выбора файла
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -755,25 +668,11 @@
                     body: formData
                 });
 
-                // Проверяем тип контента ответа
-                const contentType = response.headers.get('content-type');
-                
-                if (!contentType || !contentType.includes('application/json')) {
-                    const textResponse = await response.text();
-                    console.error('Server returned HTML instead of JSON:', textResponse);
-                    showAlert('Сервер вернул неожиданный тип ответа. Проверьте консоль для деталей.', 'error');
-                    return;
-                }
-
                 const data = await response.json();
                 
                 if (response.ok) {
                     if (data.choices && data.choices[0] && data.choices[0].message) {
                         showResult(data.choices[0].message.content);
-                        // Очистить форму после успешной отправки
-                        removeFile();
-                        document.getElementById('messageInput').value = '';
-                        document.getElementById('messageInput').style.height = 'auto';
                     } else {
                         showAlert('Неожиданный формат ответа от сервера', 'error');
                     }
@@ -782,11 +681,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                if (error.message.includes('JSON')) {
-                    showAlert('Сервер вернул неверный формат ответа', 'error');
-                } else {
-                    showAlert('Ошибка сети: ' + error.message, 'error');
-                }
+                showAlert('Ошибка сети: ' + error.message, 'error');
             } finally {
                 document.getElementById('loading').classList.remove('show');
             }
@@ -833,6 +728,19 @@
                 e.preventDefault();
                 document.getElementById('uploadForm').dispatchEvent(new Event('submit'));
             }
+        });
+
+        // Логика для бокового меню
+        const openBtn = document.getElementById('hamburgerBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const sidenav = document.getElementById('mySidenav');
+
+        openBtn.addEventListener('click', () => {
+            sidenav.style.width = "250px";
+        });
+
+        closeBtn.addEventListener('click', () => {
+            sidenav.style.width = "0";
         });
     </script>
 </body>

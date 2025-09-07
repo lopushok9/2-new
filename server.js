@@ -32,6 +32,11 @@ app.get('/', (req, res) => {
   res.render('index', { historyItems: [] });
 });
 
+// Маршрут GET /about
+app.get('/about', (req, res) => {
+  res.render('about');
+});
+
 // POST-запрос с изображением или текстом
 app.post('/', upload.single('image'), async (req, res) => {
   try {

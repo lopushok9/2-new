@@ -37,6 +37,11 @@ app.get('/about', (req, res) => {
   res.render('about');
 });
 
+// lending
+app.get('/landing', (req, res) => {
+  res.render('landing');
+});
+
 // POST-запрос с изображением или текстом
 app.post('/', upload.single('image'), async (req, res) => {
   try {

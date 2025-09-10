@@ -138,12 +138,15 @@
             transform: translateY(0);
         }
 
-        /* --- СТИЛИ ДЛЯ СТОПКИ ФОТО (только размеры/визуал — позиционирование и анимация управляются JS) --- */
+        /* --- СТИЛИ ДЛЯ СТОПКИ ФОТО (обновлено для мобильной совместимости) --- */
         .slider {
             position: relative;
             width: 80%;
             height: 80%;
             perspective: 1500px;
+            -webkit-perspective: 1500px;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
         }
 
         .slide {
@@ -154,15 +157,34 @@
             object-fit: cover;
             object-position: center;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            /* начальные переходы (будут переопределяться и в JS) */
+
+            /* hardware hint */
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+
+            /* универсальные переходы (с -webkit- префиксом для старых мобильных) */
             transition: transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease;
+            -webkit-transition: -webkit-transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, -webkit-filter 900ms ease;
         }
 
-        /* Небольшие начальные позиции для случаев, если JS не запустился: */
-        .slide:nth-child(1) { transform: translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0); z-index: 5; filter: blur(0); opacity: 1; }
-        .slide:nth-child(2) { transform: translateX(-30px) translateY(-30px) scale(0.94) rotateY(-4deg) rotateX(3deg); z-index: 4; opacity: 0.9; filter: blur(2px); }
-        .slide:nth-child(3) { transform: translateX(-60px) translateY(-60px) scale(0.88) rotateY(-6deg) rotateX(4deg); z-index: 3; opacity: 0.8; filter: blur(4px); }
-        .slide:nth-child(4) { transform: translateX(-90px) translateY(-90px) scale(0.82) rotateY(-8deg) rotateX(5deg); z-index: 2; opacity: 0.7; filter: blur(6px); }
+        /* fallback-начальные позиции если JS не запущен */
+        .slide:nth-child(1) { transform: translate3d(0,0,0) scale(1) rotateY(0) rotateX(0); z-index: 5; filter: blur(0); opacity: 1; }
+        .slide:nth-child(2) { transform: translate3d(-30px,-30px,0) scale(0.94) rotateY(-4deg) rotateX(3deg); z-index: 4; opacity: 0.9; filter: blur(2px); }
+        .slide:nth-child(3) { transform: translate3d(-60px,-60px,0) scale(0.88) rotateY(-6deg) rotateX(4deg); z-index: 3; opacity: 0.8; filter: blur(4px); }
+        .slide:nth-child(4) { transform: translate3d(-90px,-90px,0) scale(0.82) rotateY(-8deg) rotateX(5deg); z-index: 2; opacity: 0.7; filter: blur(6px); }
+
+        /* Для узких экранов немного уменьшаем blur и смещения (оптимизация производительности) */
+        @media (max-width: 480px) {
+            .slide {
+                -webkit-filter: blur(0);
+                filter: blur(0);
+            }
+            .slider {
+                perspective: 900px;
+                -webkit-perspective: 900px;
+            }
+        }
 
         @media (max-width: 768px) {
             .main-content {
@@ -245,7 +267,7 @@
         
         <section class="right-section">
             <!-- СТОПКА ФОТО -->
-            <div class="slider">
+            <div class="slider" aria-hidden="false">
                 <img src="/assets/puffins.jpg" class="slide" alt="slide1">
                 <img src="/assets/photo2.jpg" class="slide" alt="slide2">
                 <img src="/assets/photo3.jpg" class="slide" alt="slide3">
@@ -287,29 +309,36 @@
             }, 500);
         });
 
-        // -------------- АНИМАЦИЯ СТОПКИ (гладкая) ----------------
+        // -------------- АНИМАЦИЯ СТОПКИ (адаптирована под мобильные) ----------------
         const slider = document.querySelector('.slider');
         let slides = Array.from(document.querySelectorAll('.slide'));
 
-        // Параметры смещения (можно подправить)
-        const OFFSET_X = 30; // px на слой
-        const OFFSET_Y = 30; // px на слой
-        const SCALE_STEP = 0.06; // масштаб на слой
-        const ROT_Y_STEP = 2; // градусы rotateY на слой
-        const ROT_X_STEP = 1; // градусы rotateX на слой
-        const BLUR_STEP = 2; // px blur на слой
-        const OPACITY_STEP = 0.08; // прозрачность на слой
+        // Respect user's preference for reduced motion
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Parameters (adjust if needed)
+        const OFFSET_X = 30; // px per layer
+        const OFFSET_Y = 30; // px per layer
+        const SCALE_STEP = 0.06;
+        const ROT_Y_STEP = 2; // deg per layer
+        const ROT_X_STEP = 1; // deg per layer
+        const BLUR_STEP = 2; // px per layer
+        const OPACITY_STEP = 0.08;
         const TRANSITION = 'transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
 
-        // Устанавливаем позиции стопки (анимируемые)
         function applyStack() {
             slides.forEach((s, i) => {
+                // Ensure transitions are set (some mobile browsers need -webkit- explicitly)
                 s.style.transition = TRANSITION;
+                s.style.webkitTransition = TRANSITION;
                 s.style.zIndex = slides.length - i;
+
                 if (i === 0) {
-                    s.style.transform = "translateX(0px) translateY(0px) scale(1) rotateY(0deg) rotateX(0deg)";
-                    s.style.opacity = "1";
-                    s.style.filter = "blur(0px)";
+                    s.style.transform = 'translate3d(0px,0px,0px) scale(1) rotateY(0deg) rotateX(0deg)';
+                    s.style.webkitTransform = 'translate3d(0px,0px,0px) scale(1) rotateY(0deg) rotateX(0deg)';
+                    s.style.opacity = '1';
+                    s.style.filter = 'blur(0px)';
+                    s.style.webkitFilter = 'blur(0px)';
                 } else {
                     const tx = -OFFSET_X * i;
                     const ty = -OFFSET_Y * i;
@@ -318,22 +347,21 @@
                     const rx = ROT_X_STEP * i;
                     const blur = BLUR_STEP * i;
                     const opacity = Math.max(0, 1 - i * OPACITY_STEP);
-                    s.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+
+                    const t = `translate3d(${tx}px, ${ty}px, 0px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+                    s.style.transform = t;
+                    s.style.webkitTransform = t;
                     s.style.opacity = `${opacity}`;
                     s.style.filter = `blur(${blur}px)`;
+                    s.style.webkitFilter = `blur(${blur}px)`;
                 }
             });
         }
 
-        // Запускаем начальную установку после небольшой задержки, чтобы CSS успел примениться
         window.addEventListener('load', () => {
             slides = Array.from(document.querySelectorAll('.slide'));
-            // задаём стартовые стили без рывка
-            slides.forEach(s => {
-                s.style.transition = 'none';
-            });
-            // принудительный рендер
-            void slider.offsetWidth;
+            slides.forEach(s => s.style.transition = 'none');
+            void slider.offsetWidth; // reflow
             applyStack();
         });
 
@@ -341,37 +369,45 @@
 
         function rotateSlides() {
             if (isAnimating) return;
-            isAnimating = true;
 
-            // обновим ссылку (вдруг DOM изменился)
+            // If user prefers reduced motion — do a simple fade rotation without 3D pushes
+            if (reduceMotion) {
+                fadeRotate();
+                return;
+            }
+
+            isAnimating = true;
             slides = Array.from(document.querySelectorAll('.slide'));
             const first = slides[0];
             if (!first) { isAnimating = false; return; }
 
-            // 1) Верхний слайд "выдвигается" вперёд и плавно исчезает
+            // push forward visually using translate3d Z and small xy offset,
+            // using smaller Z on narrow screens to avoid clipping
+            const screenNarrow = window.innerWidth <= 480;
+            const zForward = screenNarrow ? 60 : 120;
+
             first.style.transition = TRANSITION;
-            // идёт вперёд по Z (визуально "вперед") и немного в сторону — затем исчезает
-            first.style.transform = "translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
-            first.style.opacity = "0";
-            first.style.filter = "blur(0px)";
+            first.style.webkitTransition = TRANSITION;
 
-            // 2) Через время, когда анимация ухода завершена, перемещаем элемент в конец,
-            //    ставим его в заднюю позицию с opacity 0 и затем даём плавное проявление
-            const ANIM_OUT_MS = 920; // чуть больше, чем transition
+            // move slightly forward in Z and vanish — smoother than instant appear
+            const forwardTransform = `translate3d(20px, -20px, ${zForward}px) scale(1.06) rotateY(8deg) rotateX(-4deg)`;
+            first.style.transform = forwardTransform;
+            first.style.webkitTransform = forwardTransform;
+            first.style.opacity = '0';
+            first.style.filter = 'blur(0px)';
+            first.style.webkitFilter = 'blur(0px)';
+
+            const ANIM_OUT_MS = 920; // slightly above transition duration
             setTimeout(() => {
-                // Переместим в конец DOM
+                // move DOM element to end (it's off/transparent now)
                 slider.appendChild(first);
-
-                // Обновим массив ссылок
                 slides = Array.from(document.querySelectorAll('.slide'));
-
-                // Получаем последний (только что перемещённый)
                 const last = slides[slides.length - 1];
 
-                // Сбросим transition чтобы не было резкого смещения
+                // remove transition so we can set its "back" starting pos instantly
                 last.style.transition = 'none';
+                last.style.webkitTransition = 'none';
 
-                // Установим начальное состояние "сзади" и невидимое (opacity 0)
                 const i = slides.length - 1;
                 const tx = -OFFSET_X * i;
                 const ty = -OFFSET_Y * i;
@@ -379,34 +415,54 @@
                 const ry = -ROT_Y_STEP * i;
                 const rx = ROT_X_STEP * i;
                 const blur = BLUR_STEP * i;
-                // начальное (невидимое) положение за экраном (opacity 0)
-                last.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+
+                // set its back position and keep it invisible initially
+                const backT = `translate3d(${tx}px, ${ty}px, 0px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+                last.style.transform = backT;
+                last.style.webkitTransform = backT;
                 last.style.opacity = '0';
                 last.style.filter = `blur(${blur}px)`;
+                last.style.webkitFilter = `blur(${blur}px)`;
 
-                // форсируем reflow чтобы переходы применились корректно при включении transition
+                // force reflow then animate stack to new state (which will fade the last in)
                 void last.offsetWidth;
-
-                // Плавно покажем вновь появившийся элемент и перестроим стопку
                 applyStack();
 
-                // после полного завершения анимаций снимаем флаг
-                setTimeout(() => {
-                    isAnimating = false;
-                }, 950);
+                setTimeout(() => { isAnimating = false; }, 950);
             }, ANIM_OUT_MS);
         }
 
-        // Запуск автопрокрутки
+        // Simple fade fallback (for prefers-reduced-motion)
+        function fadeRotate() {
+            if (isAnimating) return;
+            isAnimating = true;
+            slides = Array.from(document.querySelectorAll('.slide'));
+            const first = slides[0];
+            if (!first) { isAnimating = false; return; }
+
+            first.style.transition = 'opacity 600ms ease';
+            first.style.opacity = '0';
+
+            setTimeout(() => {
+                slider.appendChild(first);
+                slides = Array.from(document.querySelectorAll('.slide'));
+                slides.forEach(s => {
+                    s.style.transition = 'opacity 600ms ease';
+                    s.style.opacity = '1';
+                });
+                setTimeout(() => isAnimating = false, 650);
+            }, 650);
+        }
+
         const INTERVAL = 3000;
         let auto = setInterval(rotateSlides, INTERVAL);
 
-        // Опционально: при наведении можно остановить (не обязательно, не просили, но часто удобно)
-        // Если не нужно — строки ниже можно удалить. Я оставил неактивными (закомментированы).
-        /*
-        slider.addEventListener('mouseenter', () => clearInterval(auto));
-        slider.addEventListener('mouseleave', () => auto = setInterval(rotateSlides, INTERVAL));
-        */
+        // Optional: stop auto-rotate on touchstart to avoid unexpected movement on mobile
+        slider.addEventListener('touchstart', () => {
+            clearInterval(auto);
+            // restart after a short delay to avoid aggressive auto-rotate during interaction
+            setTimeout(() => { auto = setInterval(rotateSlides, INTERVAL); }, 2000);
+        });
     </script>
 </body>
 </html>

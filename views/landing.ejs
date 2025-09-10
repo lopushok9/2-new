@@ -32,11 +32,33 @@
         }
 
         .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             color: white;
-            text-align: center;
+        }
+
+        .logo {
             font-size: 18px;
-            font-weight: 500;
+            font-weight: 600;
             letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 400;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
         }
 
         .main-content {
@@ -58,7 +80,7 @@
             height: calc(100vh - 80px);
             position: relative;
             overflow: hidden;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -71,6 +93,10 @@
             line-height: 1.1;
             margin-bottom: 30px;
             letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .hero-subtitle {
@@ -79,26 +105,31 @@
             line-height: 1.6;
             margin-bottom: 40px;
             font-weight: 400;
+            max-width: 500px;
         }
 
         .cta-button {
-            background-color: #1a472a;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
             color: white;
             border: none;
             padding: 16px 32px;
             font-size: 1.1rem;
             font-weight: 500;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             width: fit-content;
             font-family: inherit;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.2);
         }
 
         .cta-button:hover {
-            background-color: #0f2b17;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(26, 71, 42, 0.3);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
         }
 
         .hero-image {
@@ -106,20 +137,30 @@
             height: 100%;
             object-fit: cover;
             object-position: center;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
         .image-placeholder {
             width: 80%;
             height: 80%;
-            background-color: #e0e0e0;
-            border-radius: 12px;
+            background: white;
+            border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #999;
             font-size: 1.2rem;
             text-align: center;
-            border: 2px dashed #ccc;
+            border: 2px dashed #ddd;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .placeholder-icon {
+            font-size: 3rem;
+            opacity: 0.5;
         }
 
         @media (max-width: 768px) {
@@ -144,6 +185,15 @@
 
             .hero-subtitle {
                 font-size: 1.1rem;
+                max-width: none;
+            }
+
+            .nav-links {
+                gap: 20px;
+            }
+
+            .nav-links a {
+                font-size: 14px;
             }
         }
 
@@ -155,6 +205,15 @@
             .left-section {
                 padding: 30px 15px;
             }
+
+            .nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
         }
     </style>
 </head>
@@ -162,7 +221,12 @@
     <header class="header">
         <div class="container">
             <nav class="nav">
-                Nature Explorer
+                <div class="logo">Nature Explorer</div>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/about">About</a>
+                    <a href="/landing">Landing</a>
+                </div>
             </nav>
         </div>
     </header>
@@ -172,29 +236,52 @@
             <h1 class="hero-title">Explore nature</h1>
             <p class="hero-subtitle">
                 Discover the beauty of wildlife and natural landscapes. 
-                Connect with nature through stunning photography and immersive experiences.
+                Connect with nature through stunning photography and immersive experiences 
+                powered by advanced AI technology.
             </p>
-            <button class="cta-button">Start Exploring</button>
+            <button class="cta-button" onclick="window.location.href='/'">Start Exploring</button>
         </section>
         
         <section class="right-section">
-            <!-- Замените src на путь к вашему изображению -->
-            <img 
-                src="/path/to/your/puffin-image.jpg" 
-                alt="Puffins on cliff"
-                class="hero-image"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-            >
-            <div class="image-placeholder" style="display: none;">
-                Замените на ваше<br>изображение тупиков
+            <!-- Здесь будет ваше изображение тупиков -->
+            <div class="image-placeholder">
+                <div class="placeholder-icon">🐧</div>
+                <div>Your beautiful<br>puffin image here</div>
             </div>
         </section>
     </main>
 
     <script>
-        // Простая интерактивность для кнопки
-        document.querySelector('.cta-button').addEventListener('click', function() {
-            alert('Начинаем исследование природы!');
+        // Добавляем небольшую анимацию при загрузке
+        window.addEventListener('load', function() {
+            const title = document.querySelector('.hero-title');
+            const subtitle = document.querySelector('.hero-subtitle');
+            const button = document.querySelector('.cta-button');
+            
+            title.style.opacity = '0';
+            title.style.transform = 'translateY(30px)';
+            subtitle.style.opacity = '0';
+            subtitle.style.transform = 'translateY(30px)';
+            button.style.opacity = '0';
+            button.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                title.style.transition = 'all 0.8s ease';
+                title.style.opacity = '1';
+                title.style.transform = 'translateY(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                subtitle.style.transition = 'all 0.8s ease';
+                subtitle.style.opacity = '1';
+                subtitle.style.transform = 'translateY(0)';
+            }, 300);
+            
+            setTimeout(() => {
+                button.style.transition = 'all 0.8s ease';
+                button.style.opacity = '1';
+                button.style.transform = 'translateY(0)';
+            }, 500);
         });
     </script>
 </body>

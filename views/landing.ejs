@@ -138,36 +138,29 @@
             transform: translateY(0);
         }
 
-        .hero-image {
+        /* --- СТИЛИ ДЛЯ СТОПКИ ФОТО --- */
+        .slider {
+            position: relative;
             width: 80%;
             height: 80%;
+            perspective: 1500px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
             object-fit: cover;
             object-position: center;
-            border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: transform 1s ease, opacity 1s ease, filter 1s ease;
         }
 
-        .image-placeholder {
-            width: 80%;
-            height: 80%;
-            background: white;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #999;
-            font-size: 1.2rem;
-            text-align: center;
-            border: 2px dashed #ddd;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .placeholder-icon {
-            font-size: 3rem;
-            opacity: 0.5;
-        }
+        .slide:nth-child(1) { transform: translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0); z-index: 5; filter: blur(0); }
+        .slide:nth-child(2) { transform: translateX(-20px) translateY(-20px) scale(0.95) rotateY(-3deg) rotateX(2deg); z-index: 4; opacity: 0.9; filter: blur(2px); }
+        .slide:nth-child(3) { transform: translateX(-40px) translateY(-40px) scale(0.9) rotateY(-5deg) rotateX(3deg); z-index: 3; opacity: 0.8; filter: blur(3px); }
+        .slide:nth-child(4) { transform: translateX(-60px) translateY(-60px) scale(0.85) rotateY(-6deg) rotateX(4deg); z-index: 2; opacity: 0.7; filter: blur(4px); }
 
         @media (max-width: 768px) {
             .main-content {
@@ -249,13 +242,18 @@
         </section>
         
         <section class="right-section">
-            <!-- Здесь будет ваше изображение тупиков -->
-            <div><img src="/assets/puffins.jpg" alt="Puffins on cliff" class="hero-image"></div>
+            <!-- СТОПКА ФОТО -->
+            <div class="slider">
+                <img src="/assets/puffins.jpg" class="slide" alt="slide1">
+                <img src="/assets/photo2.jpg" class="slide" alt="slide2">
+                <img src="/assets/photo3.jpg" class="slide" alt="slide3">
+                <img src="/assets/photo4.jpg" class="slide" alt="slide4">
+            </div>
         </section>
     </main>
 
     <script>
-        // Добавляем небольшую анимацию при загрузке
+        // Анимация текста и кнопки
         window.addEventListener('load', function() {
             const title = document.querySelector('.hero-title');
             const subtitle = document.querySelector('.hero-subtitle');
@@ -286,6 +284,43 @@
                 button.style.transform = 'translateY(0)';
             }, 500);
         });
+
+        // Автосмена фото
+        const slider = document.querySelector('.slider');
+        const slides = Array.from(document.querySelectorAll('.slide'));
+
+        function rotateSlides() {
+            const first = slides.shift();
+
+            first.style.transition = "transform 1s ease, opacity 1s ease, filter 1s ease";
+            first.style.transform = "translateX(-80px) translateY(-80px) scale(0.8) rotateY(-10deg) rotateX(5deg)";
+            first.style.opacity = "0";
+            first.style.filter = "blur(5px)";
+
+            setTimeout(() => {
+                first.style.transition = "none";
+                first.style.transform = "translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0)";
+                first.style.opacity = "1";
+                first.style.filter = "blur(0)";
+                slider.appendChild(first);
+                slides.push(first);
+
+                slides.forEach((s, i) => {
+                    s.style.zIndex = slides.length - i;
+                    if (i === 0) {
+                        s.style.transform = "translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0)";
+                        s.style.opacity = "1";
+                        s.style.filter = "blur(0)";
+                    } else {
+                        s.style.transform = `translateX(${-20 * i}px) translateY(${-20 * i}px) scale(${1 - i*0.05}) rotateY(${-2 * i}deg) rotateX(${i}deg)`;
+                        s.style.opacity = `${1 - i*0.1}`;
+                        s.style.filter = `blur(${i}px)`;
+                    }
+                });
+            }, 1000);
+        }
+
+        setInterval(rotateSlides, 3000);
     </script>
 </body>
 </html>

@@ -52,6 +52,7 @@
       -webkit-perspective:1500px;
       transform-style:preserve-3d;
       -webkit-transform-style:preserve-3d;
+      isolation:isolate; /* helps compositing in some engines */
     }
 
     .slide {
@@ -67,6 +68,9 @@
       -webkit-transition: -webkit-transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, -webkit-filter 900ms ease;
       transform-origin:center center;
       -webkit-transform-origin:center center;
+      /* prevent unexpected subpixel blending */
+      -webkit-transform-style:preserve-3d;
+      transform-style:preserve-3d;
     }
 
     /* fallback positions if JS doesn't run */
@@ -75,7 +79,7 @@
     .slide:nth-child(3) { transform: translate3d(-60px,-60px,0) scale(.88) rotateY(-6deg) rotateX(4deg); z-index:3; opacity:.8; filter:blur(4px); }
     .slide:nth-child(4) { transform: translate3d(-90px,-90px,0) scale(.82) rotateY(-8deg) rotateX(5deg); z-index:2; opacity:.7; filter:blur(6px); }
 
-    /* Mobile: we keep previous mobile simplifications (unchanged) */
+    /* Mobile: keep previous mobile simplifications (unchanged) */
     @media (max-width:768px) {
       .main-content { flex-direction:column; min-height:auto; }
       .left-section { padding:30px 20px; text-align:center; }
@@ -111,8 +115,7 @@
       <h1 class="hero-title">Explore the beauty of nature</h1>
       <p class="hero-subtitle">Brand new AI tool aims to make bird recognition fast, easy, and fun</p>
       <button class="cta-button" onclick="window.location.href='/'">Start Exploring</button>
-      <!-- optional mobile image kept in original layout if needed by your mobile rules -->
-      <img src="/assets/puffins.jpg" alt="Puffins" style="display:none" id="mobile-cover" />
+      <img id="mobile-cover" src="/assets/puffins.jpg" alt="Puffins" style="display:none" />
     </section>
 
     <section class="right-section">
@@ -126,141 +129,161 @@
   </main>
 
   <script>
-    (function(){
-      const slider = document.querySelector('.slider');
-      let slides = Array.from(document.querySelectorAll('.slide'));
+  (function(){
+    const slider = document.querySelector('.slider');
+    const slidesEls = Array.from(document.querySelectorAll('.slide'));
+    const n = slidesEls.length;
 
-      const isMobile = ('ontouchstart' in window) || window.innerWidth <= 768;
-      const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = ('ontouchstart' in window) || window.innerWidth <= 768;
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // If mobile or reduced-motion -> do not run desktop animation
-      if (isMobile || prefersReduced) {
-        if (slider) slider.style.display = 'none';
-        const mobileCover = document.getElementById('mobile-cover');
-        if (mobileCover) mobileCover.style.display = 'block';
-        return;
-      }
+    if (isMobile || prefersReduced) {
+      if (slider) slider.style.display = 'none';
+      const mc = document.getElementById('mobile-cover'); if (mc) mc.style.display = 'block';
+      return;
+    }
 
-      // Parameters
-      const OFFSET_X = 30;
-      const OFFSET_Y = 30;
-      const SCALE_STEP = 0.06;
-      const ROT_Y_STEP = 2;
-      const ROT_X_STEP = 1;
-      const BLUR_STEP = 2;
-      const OPACITY_STEP = 0.08;
-      const TRANSITION = 'transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
+    // Parameters
+    const OFFSET_X = 30;
+    const OFFSET_Y = 30;
+    const SCALE_STEP = 0.06;
+    const ROT_Y_STEP = 2;
+    const ROT_X_STEP = 1;
+    const BLUR_STEP = 2;
+    const OPACITY_STEP = 0.08;
+    const TRANSITION = 'transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
 
-      // applyStack uses translate3d and sets -webkitTransform too for Safari
-      function applyStack() {
-        slides = Array.from(document.querySelectorAll('.slide'));
-        slides.forEach((s, i) => {
-          s.style.transition = TRANSITION;
-          s.style.webkitTransition = TRANSITION;
-          // Explicitly set zIndex to control stacking order reliably
-          s.style.zIndex = slides.length - i;
-          if (i === 0) {
-            const t = 'translate3d(0px, 0px, 0px) scale(1) rotateY(0deg) rotateX(0deg)';
-            s.style.transform = t; s.style.webkitTransform = t;
-            s.style.opacity = '1'; s.style.filter = 'blur(0px)'; s.style.webkitFilter = 'blur(0px)';
-            s.style.backfaceVisibility = 'hidden'; s.style.webkitBackfaceVisibility = 'hidden';
-          } else {
-            const tx = -OFFSET_X * i;
-            const ty = -OFFSET_Y * i;
-            const sc = 1 - i * SCALE_STEP;
-            const ry = -ROT_Y_STEP * i;
-            const rx = ROT_X_STEP * i;
-            const bl = BLUR_STEP * i;
-            const op = Math.max(0, 1 - i * OPACITY_STEP);
-            const t = `translate3d(${tx}px, ${ty}px, 0px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
-            s.style.transform = t; s.style.webkitTransform = t;
-            s.style.opacity = `${op}`; s.style.filter = `blur(${bl}px)`; s.style.webkitFilter = `blur(${bl}px)`;
-            s.style.backfaceVisibility = 'hidden'; s.style.webkitBackfaceVisibility = 'hidden';
-          }
-        });
-      }
+    // Logical start index (which element from slidesEls is currently on top)
+    let start = 0;
+    let isAnimating = false;
 
-      // initial setup (remove transitions to prevent jump)
-      window.addEventListener('load', () => {
-        slides = Array.from(document.querySelectorAll('.slide'));
-        slides.forEach(s => s.style.transition = 'none');
-        // force reflow
-        void slider.offsetWidth;
-        applyStack();
-      });
+    function logicalAt(i) {
+      // i from 0..n-1, return element that is i-th in the visual stack
+      return slidesEls[(start + i) % n];
+    }
 
-      let isAnimating = false;
-
-      function rotateSlides() {
-        if (isAnimating) return;
-        isAnimating = true;
-
-        slides = Array.from(document.querySelectorAll('.slide'));
-        const first = slides[0];
-        if (!first) { isAnimating = false; return; }
-
-        // Ensure this element visually on top across browsers while animating
-        // (important for Safari compositing behaviour)
-        first.style.zIndex = 9999;
-
-        // Use translate3d (and -webkitTransform) to push forward smoothly
-        const screenNarrow = window.innerWidth <= 1024; // slightly adjust forward amount for smaller desktop windows
-        const zForward = screenNarrow ? 80 : 120;
-        const forwardTransform = `translate3d(20px, -20px, ${zForward}px) scale(1.06) rotateY(8deg) rotateX(-4deg)`;
-
-        first.style.transition = TRANSITION;
-        first.style.webkitTransition = TRANSITION;
-        first.style.transform = forwardTransform;
-        first.style.webkitTransform = forwardTransform;
-        first.style.opacity = '0';
-        first.style.filter = 'blur(0px)';
-        first.style.webkitFilter = 'blur(0px)';
-        first.style.backfaceVisibility = 'hidden'; first.style.webkitBackfaceVisibility = 'hidden';
-
-        const ANIM_OUT_MS = 920;
-        setTimeout(() => {
-          // Move DOM node to end (it is already transparent)
-          slider.appendChild(first);
-
-          // Recompute slides array and reset the moved element into back position instantly
-          slides = Array.from(document.querySelectorAll('.slide'));
-          const last = slides[slides.length - 1];
-
-          // Remove transition while setting back position
-          last.style.transition = 'none'; last.style.webkitTransition = 'none';
-
-          const i = slides.length - 1;
+    function applyStack(withTransition = true) {
+      // Set transforms & z-indexes according to logical order (no DOM moves)
+      for (let i = 0; i < n; i++) {
+        const el = logicalAt(i);
+        if (!el) continue;
+        if (withTransition) {
+          el.style.transition = TRANSITION;
+          el.style.webkitTransition = TRANSITION;
+        } else {
+          el.style.transition = 'none';
+          el.style.webkitTransition = 'none';
+        }
+        el.style.zIndex = String(n - i);
+        if (i === 0) {
+          const t = 'translate3d(0px, 0px, 0px) scale(1) rotateY(0deg) rotateX(0deg)';
+          el.style.transform = t; el.style.webkitTransform = t;
+          el.style.opacity = '1'; el.style.filter = 'blur(0px)'; el.style.webkitFilter = 'blur(0px)';
+        } else {
           const tx = -OFFSET_X * i;
           const ty = -OFFSET_Y * i;
           const sc = 1 - i * SCALE_STEP;
           const ry = -ROT_Y_STEP * i;
           const rx = ROT_X_STEP * i;
           const bl = BLUR_STEP * i;
-
-          const backT = `translate3d(${tx}px, ${ty}px, 0px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
-          last.style.transform = backT; last.style.webkitTransform = backT;
-          last.style.opacity = '0';
-          last.style.filter = `blur(${bl}px)`; last.style.webkitFilter = `blur(${bl}px)`;
-          last.style.backfaceVisibility = 'hidden'; last.style.webkitBackfaceVisibility = 'hidden';
-
-          // Force reflow so the instant position is registered, then animate stack to new state
-          void last.offsetWidth;
-          applyStack();
-
-          // after stack settled, restore normal z-indexes (applyStack sets zIndex properly)
-          setTimeout(() => {
-            isAnimating = false;
-          }, 950);
-        }, ANIM_OUT_MS);
+          const op = Math.max(0, 1 - i * OPACITY_STEP);
+          const t = `translate3d(${tx}px, ${ty}px, 0px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+          el.style.transform = t; el.style.webkitTransform = t;
+          el.style.opacity = `${op}`; el.style.filter = `blur(${bl}px)`; el.style.webkitFilter = `blur(${bl}px)`;
+        }
+        // ensure backface-visibility
+        el.style.backfaceVisibility = 'hidden'; el.style.webkitBackfaceVisibility = 'hidden';
       }
+    }
 
-      // Start auto-rotate
-      setInterval(rotateSlides, 3000);
+    // initial setup without transition to avoid jank
+    window.addEventListener('load', () => {
+      slidesEls.forEach(el => { el.style.transition = 'none'; el.style.webkitTransition = 'none'; });
+      // force reflow
+      if (slider) void slider.offsetWidth;
+      applyStack(false);
+      // re-enable transitions for next frames
+      setTimeout(() => applyStack(true), 50);
+    });
 
-      // Optional: pause on hover for desktop usability
-      slider.addEventListener('mouseenter', () => { /* optional: pause */ });
-      slider.addEventListener('mouseleave', () => { /* optional: resume */ });
-    })();
+    function rotateSlides() {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      // element currently on top (logical index 0)
+      const topEl = logicalAt(0);
+      if (!topEl) { isAnimating = false; return; }
+
+      // temporarily bring it visually above everything (avoid compositing issues)
+      topEl.style.zIndex = 9999;
+
+      // forward transform (use translate3d and -webkitTransform)
+      const screenNarrow = window.innerWidth <= 1024;
+      const zForward = screenNarrow ? 80 : 120;
+      const forward = `translate3d(20px, -20px, ${zForward}px) scale(1.06) rotateY(8deg) rotateX(-4deg)`;
+      topEl.style.transition = TRANSITION;
+      topEl.style.webkitTransition = TRANSITION;
+      topEl.style.transform = forward;
+      topEl.style.webkitTransform = forward;
+      topEl.style.opacity = '0';
+      topEl.style.filter = 'blur(0px)';
+      topEl.style.webkitFilter = 'blur(0px)';
+
+      // after forward animation completes, advance logical pointer and re-layout all slides
+      const ANIM_OUT_MS = 920;
+      setTimeout(() => {
+        // increment logical start (equivalent of moving top to back)
+        start = (start + 1) % n;
+
+        // Temporarily disable transitions to set immediate "back" positions
+        slidesEls.forEach(el => { el.style.transition = 'none'; el.style.webkitTransition = 'none'; });
+
+        // place every element to its new logical position instantly; make the backmost invisible initially
+        for (let i = 0; i < n; i++) {
+          const el = logicalAt(i);
+          if (!el) continue;
+          el.style.zIndex = String(n - i);
+          const tx = -OFFSET_X * i;
+          const ty = -OFFSET_Y * i;
+          const sc = 1 - i * SCALE_STEP;
+          const ry = -ROT_Y_STEP * i;
+          const rx = ROT_X_STEP * i;
+          const bl = BLUR_STEP * i;
+          const op = (i === n - 1) ? 0 : Math.max(0, 1 - i * OPACITY_STEP); // backmost starts invisible
+          const t = `translate3d(${tx}px, ${ty}px, 0px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+          el.style.transform = t; el.style.webkitTransform = t;
+          el.style.opacity = String(op);
+          el.style.filter = `blur(${bl}px)`; el.style.webkitFilter = `blur(${bl}px)`;
+        }
+
+        // Force reflow so immediate positions are registered
+        if (slider) void slider.offsetWidth;
+
+        // Re-enable transitions and animate into final stack (this will fade-in the backmost)
+        slidesEls.forEach(el => { el.style.transition = TRANSITION; el.style.webkitTransition = TRANSITION; });
+
+        // Apply stack with transitions (fade the backmost in)
+        applyStack(true);
+
+        // allow next rotation after transitions settle
+        setTimeout(() => { isAnimating = false; }, 950);
+      }, ANIM_OUT_MS);
+    }
+
+    // start rotation
+    const INTERVAL = 3000;
+    setInterval(rotateSlides, INTERVAL);
+
+    // Optional: pause on pointer enter to improve UX
+    slider.addEventListener('mouseenter', () => { /* could pause by clearing interval */ });
+    slider.addEventListener('mouseleave', () => { /* resume */ });
+
+    // On resize, recompute (keeps zIndex & transforms correct)
+    window.addEventListener('resize', () => {
+      // recompute layout quickly
+      applyStack(true);
+    });
+  })();
   </script>
 </body>
 </html>

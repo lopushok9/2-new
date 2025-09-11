@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Bird</title>
   <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
@@ -10,89 +10,172 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
   <link rel="manifest" href="/assets/site.webmanifest" />
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
-      background: #fff; min-height:100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+      background-color: white;
+      min-height: 100vh;
     }
 
-    .header { background:#1a472a; width:100%; padding:20px 0; z-index:10; position:relative; }
-    .container { max-width:1200px; margin:0 auto; padding:0 20px; }
-    .nav { display:flex; justify-content:space-between; align-items:center; color:#fff; }
-    .logo { font-size:33px; font-weight:600; letter-spacing:0.8px; }
-    .nav-links { display:flex; gap:30px; }
-    .nav-links a { color:#fff; text-decoration:none; font-size:16px; font-weight:400; transition:opacity .3s; }
-    .nav-links a:hover { opacity:.8; }
+    .header {
+      background-color: #1a472a;
+      width: 100%;
+      padding: 20px 0;
+      position: relative;
+      z-index: 10;
+    }
 
-    .main-content { display:flex; min-height:calc(100vh - 80px); align-items:center; }
-    .left-section { flex:1; padding:60px 40px 60px 80px; display:flex; flex-direction:column; justify-content:center; }
-    .right-section { flex:1; height:calc(100vh - 80px); position:relative; display:flex; align-items:center; justify-content:center; background:#fff; }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .logo {
+      font-size: 33px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      letter-spacing: 0.7px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 400;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      transition: opacity 0.3s ease;
+    }
+    .nav-links a:hover { opacity: 0.8; }
+
+    .main-content {
+      display: flex;
+      min-height: calc(100vh - 80px);
+      align-items: center;
+    }
+
+    .left-section {
+      flex: 1;
+      padding: 60px 40px 60px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .right-section {
+      flex: 1;
+      height: calc(100vh - 80px);
+      position: relative;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     .hero-title {
-      font-size:4.5rem; font-weight:700; line-height:1.1; margin-bottom:30px;
-      background:linear-gradient(135deg,#1a472a 0%,#2d5a3d 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      font-size: 4.5rem;
+      font-weight: 700;
+      color: #1a472a;
+      line-height: 1.1;
+      margin-bottom: 30px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .hero-subtitle { font-size:1.25rem; color:#666; line-height:1.6; margin-bottom:40px; max-width:500px; }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 40px;
+      font-weight: 400;
+      max-width: 500px;
+    }
 
     .cta-button {
-      background:linear-gradient(135deg,#1a472a 0%,#2d5a3d 100%); color:#fff; border:none;
-      padding:16px 32px; font-size:1.1rem; font-weight:500; border-radius:12px; cursor:pointer;
-      transition:all .3s; width:fit-content; box-shadow:0 4px 15px rgba(26,71,42,0.2);
+      background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: fit-content;
+      font-family: inherit;
+      box-shadow: 0 4px 15px rgba(26, 71, 42, 0.2);
     }
-    .cta-button:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(26,71,42,0.3); }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(26, 71, 42, 0.3);
+    }
+    .cta-button:active { transform: translateY(0); }
 
-    /* ---------- Slider styles (desktop) ---------- */
+    /* --- STACK SLIDER --- */
     .slider {
-      position:relative;
-      width:80%;
-      height:80%;
-      perspective:1500px;
-      -webkit-perspective:1500px;
-      transform-style:preserve-3d;
-      -webkit-transform-style:preserve-3d;
-      isolation:isolate; /* helps compositing in some engines */
+      position: relative;
+      width: 80%;
+      height: 80%;
+      perspective: 1500px;
     }
 
     .slide {
-      position:absolute;
-      top:0; left:0;
-      width:100%; height:100%;
-      border-radius:20px;
-      object-fit:cover; object-position:center;
-      box-shadow:0 20px 40px rgba(0,0,0,0.1);
-      will-change: transform, opacity;
-      backface-visibility:hidden; -webkit-backface-visibility:hidden;
-      transition: transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease;
-      -webkit-transition: -webkit-transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, -webkit-filter 900ms ease;
-      transform-origin:center center;
-      -webkit-transform-origin:center center;
-      /* prevent unexpected subpixel blending */
-      -webkit-transform-style:preserve-3d;
-      transform-style:preserve-3d;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      object-fit: cover;
+      object-position: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      transition: transform 0.9s cubic-bezier(.22,1,.36,1), opacity 0.9s ease, filter 0.9s ease;
+      will-change: transform, opacity, filter;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transform: translateZ(0);
     }
 
-    /* fallback positions if JS doesn't run */
-    .slide:nth-child(1) { transform: translate3d(0,0,0) scale(1); z-index:5; opacity:1; filter:blur(0); }
-    .slide:nth-child(2) { transform: translate3d(-30px,-30px,0) scale(.94) rotateY(-4deg) rotateX(3deg); z-index:4; opacity:.9; filter:blur(2px); }
-    .slide:nth-child(3) { transform: translate3d(-60px,-60px,0) scale(.88) rotateY(-6deg) rotateX(4deg); z-index:3; opacity:.8; filter:blur(4px); }
-    .slide:nth-child(4) { transform: translate3d(-90px,-90px,0) scale(.82) rotateY(-8deg) rotateX(5deg); z-index:2; opacity:.7; filter:blur(6px); }
-
-    /* Mobile: keep previous mobile simplifications (unchanged) */
-    @media (max-width:768px) {
-      .main-content { flex-direction:column; min-height:auto; }
-      .left-section { padding:30px 20px; text-align:center; }
-      .right-section { display:none; } /* hide desktop slider on mobile */
-      .cta-button { display:block; margin:20px auto 0; }
-      .nav-links a { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; }
-      .hero-title { font-size:2.8rem; } .hero-subtitle { font-size:1rem; max-width:none; }
-      .slide { transition:none !important; transform:none !important; filter:none !important; opacity:0 !important; }
-    }
-
-    @media (max-width:480px) {
-      .hero-title { font-size:2.2rem; }
-      .left-section { padding:20px 15px; }
+    /* MOBILE: disable animation, show only first image */
+    @media (max-width: 768px) {
+      .main-content { flex-direction: column; min-height: auto; }
+      .left-section { padding: 40px 20px; text-align: center; }
+      .right-section {
+        height: auto;
+        min-height: auto;
+        margin-top: 20px;
+      }
+      .slider { width: 90%; height: auto; }
+      .slide {
+        position: static;
+        width: 100%;
+        height: auto;
+        transform: none !important;
+        filter: none !important;
+        opacity: 1 !important;
+        box-shadow: none;
+      }
+      .slide:not(:first-child) { display: none; }
+      .cta-button { margin: 0 auto; }
+      .hero-title { font-size: 2.5rem; }
+      .nav { flex-direction: column; gap: 15px; }
+      .nav-links { gap: 15px; }
+      .nav-links a { font-family: Arial, sans-serif; }
     }
   </style>
 </head>
@@ -113,13 +196,14 @@
   <main class="main-content">
     <section class="left-section">
       <h1 class="hero-title">Explore the beauty of nature</h1>
-      <p class="hero-subtitle">Brand new AI tool aims to make bird recognition fast, easy, and fun</p>
+      <p class="hero-subtitle">
+        Brand new AI tool aims to make bird recognition fast, easy, and fun
+      </p>
       <button class="cta-button" onclick="window.location.href='/'">Start Exploring</button>
-      <img id="mobile-cover" src="/assets/puffins.jpg" alt="Puffins" style="display:none" />
     </section>
-
+    
     <section class="right-section">
-      <div class="slider" aria-hidden="false">
+      <div class="slider">
         <img src="/assets/puffins.jpg" class="slide" alt="slide1">
         <img src="/assets/photo2.jpg" class="slide" alt="slide2">
         <img src="/assets/photo3.jpg" class="slide" alt="slide3">
@@ -129,161 +213,46 @@
   </main>
 
   <script>
-  (function(){
     const slider = document.querySelector('.slider');
-    const slidesEls = Array.from(document.querySelectorAll('.slide'));
-    const n = slidesEls.length;
+    let slides = Array.from(document.querySelectorAll('.slide'));
 
-    const isMobile = ('ontouchstart' in window) || window.innerWidth <= 768;
-    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const OFFSET_X = 30, OFFSET_Y = 30, SCALE_STEP = 0.06;
+    const ROT_Y_STEP = 2, ROT_X_STEP = 1, BLUR_STEP = 2, OPACITY_STEP = 0.08;
 
-    if (isMobile || prefersReduced) {
-      if (slider) slider.style.display = 'none';
-      const mc = document.getElementById('mobile-cover'); if (mc) mc.style.display = 'block';
-      return;
-    }
-
-    // Parameters
-    const OFFSET_X = 30;
-    const OFFSET_Y = 30;
-    const SCALE_STEP = 0.06;
-    const ROT_Y_STEP = 2;
-    const ROT_X_STEP = 1;
-    const BLUR_STEP = 2;
-    const OPACITY_STEP = 0.08;
-    const TRANSITION = 'transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
-
-    // Logical start index (which element from slidesEls is currently on top)
-    let start = 0;
-    let isAnimating = false;
-
-    function logicalAt(i) {
-      // i from 0..n-1, return element that is i-th in the visual stack
-      return slidesEls[(start + i) % n];
-    }
-
-    function applyStack(withTransition = true) {
-      // Set transforms & z-indexes according to logical order (no DOM moves)
-      for (let i = 0; i < n; i++) {
-        const el = logicalAt(i);
-        if (!el) continue;
-        if (withTransition) {
-          el.style.transition = TRANSITION;
-          el.style.webkitTransition = TRANSITION;
-        } else {
-          el.style.transition = 'none';
-          el.style.webkitTransition = 'none';
-        }
-        el.style.zIndex = String(n - i);
+    function applyStack() {
+      slides.forEach((s, i) => {
+        s.style.zIndex = slides.length - i;
         if (i === 0) {
-          const t = 'translate3d(0px, 0px, 0px) scale(1) rotateY(0deg) rotateX(0deg)';
-          el.style.transform = t; el.style.webkitTransform = t;
-          el.style.opacity = '1'; el.style.filter = 'blur(0px)'; el.style.webkitFilter = 'blur(0px)';
+          s.style.transform = "translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0)";
+          s.style.opacity = "1"; s.style.filter = "blur(0px)";
         } else {
-          const tx = -OFFSET_X * i;
-          const ty = -OFFSET_Y * i;
-          const sc = 1 - i * SCALE_STEP;
-          const ry = -ROT_Y_STEP * i;
-          const rx = ROT_X_STEP * i;
-          const bl = BLUR_STEP * i;
-          const op = Math.max(0, 1 - i * OPACITY_STEP);
-          const t = `translate3d(${tx}px, ${ty}px, 0px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
-          el.style.transform = t; el.style.webkitTransform = t;
-          el.style.opacity = `${op}`; el.style.filter = `blur(${bl}px)`; el.style.webkitFilter = `blur(${bl}px)`;
+          const tx = -OFFSET_X * i, ty = -OFFSET_Y * i;
+          const scale = 1 - i * SCALE_STEP, ry = -ROT_Y_STEP * i, rx = ROT_X_STEP * i;
+          const blur = BLUR_STEP * i, opacity = Math.max(0, 1 - i * OPACITY_STEP);
+          s.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+          s.style.opacity = opacity; s.style.filter = `blur(${blur}px)`;
         }
-        // ensure backface-visibility
-        el.style.backfaceVisibility = 'hidden'; el.style.webkitBackfaceVisibility = 'hidden';
-      }
+      });
     }
 
-    // initial setup without transition to avoid jank
-    window.addEventListener('load', () => {
-      slidesEls.forEach(el => { el.style.transition = 'none'; el.style.webkitTransition = 'none'; });
-      // force reflow
-      if (slider) void slider.offsetWidth;
-      applyStack(false);
-      // re-enable transitions for next frames
-      setTimeout(() => applyStack(true), 50);
-    });
+    window.addEventListener('load', () => { applyStack(); });
 
+    let isAnimating = false;
     function rotateSlides() {
-      if (isAnimating) return;
-      isAnimating = true;
-
-      // element currently on top (logical index 0)
-      const topEl = logicalAt(0);
-      if (!topEl) { isAnimating = false; return; }
-
-      // temporarily bring it visually above everything (avoid compositing issues)
-      topEl.style.zIndex = 9999;
-
-      // forward transform (use translate3d and -webkitTransform)
-      const screenNarrow = window.innerWidth <= 1024;
-      const zForward = screenNarrow ? 80 : 120;
-      const forward = `translate3d(20px, -20px, ${zForward}px) scale(1.06) rotateY(8deg) rotateX(-4deg)`;
-      topEl.style.transition = TRANSITION;
-      topEl.style.webkitTransition = TRANSITION;
-      topEl.style.transform = forward;
-      topEl.style.webkitTransform = forward;
-      topEl.style.opacity = '0';
-      topEl.style.filter = 'blur(0px)';
-      topEl.style.webkitFilter = 'blur(0px)';
-
-      // after forward animation completes, advance logical pointer and re-layout all slides
-      const ANIM_OUT_MS = 920;
+      if (isAnimating) return; isAnimating = true;
+      slides = Array.from(document.querySelectorAll('.slide'));
+      const first = slides[0];
+      first.style.transform = "translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
+      first.style.opacity = "0"; first.style.filter = "blur(0px)";
       setTimeout(() => {
-        // increment logical start (equivalent of moving top to back)
-        start = (start + 1) % n;
-
-        // Temporarily disable transitions to set immediate "back" positions
-        slidesEls.forEach(el => { el.style.transition = 'none'; el.style.webkitTransition = 'none'; });
-
-        // place every element to its new logical position instantly; make the backmost invisible initially
-        for (let i = 0; i < n; i++) {
-          const el = logicalAt(i);
-          if (!el) continue;
-          el.style.zIndex = String(n - i);
-          const tx = -OFFSET_X * i;
-          const ty = -OFFSET_Y * i;
-          const sc = 1 - i * SCALE_STEP;
-          const ry = -ROT_Y_STEP * i;
-          const rx = ROT_X_STEP * i;
-          const bl = BLUR_STEP * i;
-          const op = (i === n - 1) ? 0 : Math.max(0, 1 - i * OPACITY_STEP); // backmost starts invisible
-          const t = `translate3d(${tx}px, ${ty}px, 0px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
-          el.style.transform = t; el.style.webkitTransform = t;
-          el.style.opacity = String(op);
-          el.style.filter = `blur(${bl}px)`; el.style.webkitFilter = `blur(${bl}px)`;
-        }
-
-        // Force reflow so immediate positions are registered
-        if (slider) void slider.offsetWidth;
-
-        // Re-enable transitions and animate into final stack (this will fade-in the backmost)
-        slidesEls.forEach(el => { el.style.transition = TRANSITION; el.style.webkitTransition = TRANSITION; });
-
-        // Apply stack with transitions (fade the backmost in)
-        applyStack(true);
-
-        // allow next rotation after transitions settle
+        slider.appendChild(first);
+        slides = Array.from(document.querySelectorAll('.slide'));
+        applyStack();
         setTimeout(() => { isAnimating = false; }, 950);
-      }, ANIM_OUT_MS);
+      }, 920);
     }
 
-    // start rotation
-    const INTERVAL = 3000;
-    setInterval(rotateSlides, INTERVAL);
-
-    // Optional: pause on pointer enter to improve UX
-    slider.addEventListener('mouseenter', () => { /* could pause by clearing interval */ });
-    slider.addEventListener('mouseleave', () => { /* resume */ });
-
-    // On resize, recompute (keeps zIndex & transforms correct)
-    window.addEventListener('resize', () => {
-      // recompute layout quickly
-      applyStack(true);
-    });
-  })();
+    if (window.innerWidth > 768) setInterval(rotateSlides, 3000);
   </script>
 </body>
 </html>

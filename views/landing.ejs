@@ -1,193 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>What Bird</title>
-  <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-  <link rel="shortcut icon" href="/assets/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
-  <link rel="manifest" href="/assets/site.webmanifest" />
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif; background-color: white; min-height: 100vh; }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>What Bird</title>
+    <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/assets/site.webmanifest" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .header { background-color: #1a472a; width: 100%; padding: 20px 0; position: relative; z-index: 10; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-    .nav { display: flex; justify-content: space-between; align-items: center; color: white; }
-    .logo { font-size: 33px; font-weight: 600; letter-spacing: 0.8px; }
-    .nav-links { display: flex; gap: 30px; letter-spacing: 0.7px; }
-    .nav-links a { color: white; text-decoration: none; font-size: 16px; font-weight: 400; font-family: "SF Pro Display"; transition: opacity 0.3s ease; }
-    .nav-links a:hover { opacity: 0.8; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+            background-color: white;
+            min-height: 100vh;
+        }
 
-    .main-content { display: flex; min-height: calc(100vh - 80px); align-items: center; }
-    .left-section { flex: 1; padding: 60px 40px 60px 80px; display: flex; flex-direction: column; justify-content: center; }
-    .right-section { flex: 1; height: calc(100vh - 80px); position: relative; display: flex; align-items: center; justify-content: center; }
+        .header {
+            background-color: #1a472a;
+            width: 100%;
+            padding: 20px 0;
+            position: relative;
+            z-index: 10;
+        }
 
-    .hero-title {
-      font-size: 4.5rem; font-weight: 700; color: #1a472a; line-height: 1.1; margin-bottom: 30px; letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .hero-subtitle { font-size: 1.25rem; color: #666; line-height: 1.6; margin-bottom: 40px; max-width: 500px; }
-    .cta-button {
-      background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%); color: white; border: none;
-      padding: 16px 32px; font-size: 1.1rem; font-weight: 500; border-radius: 12px;
-      cursor: pointer; transition: all 0.3s ease; width: fit-content; box-shadow: 0 4px 15px rgba(26,71,42,0.2);
-    }
-    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(26,71,42,0.3); }
-    .cta-button:active { transform: translateY(0); }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-    /* --- Слайдер общие стили --- */
-    .slider { position: relative; width: 80%; height: 80%; perspective: 1500px; }
-    .slide {
-      position: absolute; width: 100%; height: 100%; border-radius: 20px;
-      object-fit: cover; object-position: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-      transition: transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease;
-    }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
 
-    /* fallback позиции если JS не запустился */
-    .slide:nth-child(1) { transform: translateX(0) translateY(0) scale(1); z-index: 5; opacity: 1; }
-    .slide:nth-child(2) { transform: translateX(-30px) translateY(-30px) scale(0.94); z-index: 4; opacity: 0.9; }
-    .slide:nth-child(3) { transform: translateX(-60px) translateY(-60px) scale(0.88); z-index: 3; opacity: 0.8; }
-    .slide:nth-child(4) { transform: translateX(-90px) translateY(-90px) scale(0.82); z-index: 2; opacity: 0.7; }
+        .logo {
+            font-size: 33px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+        }
 
-    /* --- Мобильный упрощённый режим (fade) --- */
-    @media (max-width: 768px) {
-      .slider.mobile .slide {
-        position: absolute; top:0; left:0; width:100%; height:100%;
-        transform: none !important; filter: none !important;
-        opacity: 0; z-index: 1;
-        animation: mobile-fade 9s linear infinite;
-      }
-      .slider.mobile .slide:nth-child(1) { animation-delay: 0s; }
-      .slider.mobile .slide:nth-child(2) { animation-delay: 3s; }
-      .slider.mobile .slide:nth-child(3) { animation-delay: 6s; }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            letter-spacing: 0.7px;
+        }
 
-      @keyframes mobile-fade {
-        0% { opacity: 0; }
-        10% { opacity: 1; }
-        33% { opacity: 1; }
-        43% { opacity: 0; }
-        100% { opacity: 0; }
-      }
-    }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 400;
+            font-family: "SF Pro Display";
+            transition: opacity 0.3s ease;
+        }
 
-    @media (max-width: 768px) {
-      .main-content { flex-direction: column; min-height: auto; }
-      .left-section { padding: 40px 20px; text-align: center; }
-      .right-section { height: 50vh; min-height: 400px; }
-      .hero-title { font-size: 3rem; }
-      .hero-subtitle { font-size: 1.1rem; max-width: none; }
-      .nav-links { gap: 20px; }
-      .nav-links a { font-size: 14px; }
-    }
-    @media (max-width: 480px) {
-      .hero-title { font-size: 2.5rem; }
-      .left-section { padding: 30px 15px; }
-      .nav { flex-direction: column; gap: 15px; }
-      .nav-links { gap: 15px; }
-    }
-  </style>
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: calc(100vh - 80px);
+            align-items: center;
+        }
+
+        .left-section {
+            flex: 1;
+            padding: 60px 40px 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right-section {
+            flex: 1;
+            height: calc(100vh - 80px);
+            position: relative;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: #1a472a;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            font-weight: 400;
+            max-width: 500px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: fit-content;
+            font-family: inherit;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26, 71, 42, 0.3);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        /* --- СТИЛИ ДЛЯ СТОПКИ ФОТО (десктоп) --- */
+        .slider {
+            position: relative;
+            width: 80%;
+            height: 80%;
+            perspective: 1500px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+            object-position: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease;
+        }
+
+        /* Небольшие начальные позиции для случаев, если JS не запустился */
+        .slide:nth-child(1) { transform: translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0); z-index: 5; filter: blur(0); opacity: 1; }
+        .slide:nth-child(2) { transform: translateX(-30px) translateY(-30px) scale(0.94) rotateY(-4deg) rotateX(3deg); z-index: 4; opacity: 0.9; filter: blur(2px); }
+        .slide:nth-child(3) { transform: translateX(-60px) translateY(-60px) scale(0.88) rotateY(-6deg) rotateX(4deg); z-index: 3; opacity: 0.8; filter: blur(4px); }
+        .slide:nth-child(4) { transform: translateX(-90px) translateY(-90px) scale(0.82) rotateY(-8deg) rotateX(5deg); z-index: 2; opacity: 0.7; filter: blur(6px); }
+
+        /* --- MOBILE: только изменения для мобильных (всё остальное остаётся без изменений) --- */
+        /* добавил .mobile-cover — по умолчанию скрыта; на мобильных отображается */
+        .mobile-cover { display: none; width: 100%; max-width: 720px; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.12); margin-top: 20px; }
+
+        @media (max-width: 768px) {
+            /* делаем колонку (как раньше) */
+            .main-content { flex-direction: column; min-height: auto; }
+            .left-section { padding: 30px 20px; text-align: center; }
+            .right-section { display: none; } /* скрываем десктопный слайдер полностью на мобиле */
+
+            /* Показываем одиночное изображение прямо под текстом (в left-section) */
+            .mobile-cover { display: block; height: auto; object-fit: cover; }
+
+            /* Центрируем кнопку на мобильных */
+            .cta-button { display: block; margin: 20px auto 0 auto; }
+
+            /* Гарантированный системный шрифт для nav-links на мобильных (исправляет проблемы с отображением) */
+            .nav-links a {
+                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            }
+
+            /* уменьшение заголовка и подзаголовка на мобильных */
+            .hero-title { font-size: 2.8rem; }
+            .hero-subtitle { font-size: 1rem; max-width: none; }
+
+            /* избавляемся от тяжёлых blur/3D на мобильных (если вдруг JS применяет корректы) */
+            .slide { transition: none !important; transform: none !important; filter: none !important; opacity: 0 !important; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title { font-size: 2.2rem; }
+            .left-section { padding: 20px 15px; }
+            .mobile-cover { margin-top: 16px; border-radius: 12px; }
+            .nav { flex-direction: column; gap: 12px; }
+            .nav-links { gap: 12px; }
+        }
+    </style>
 </head>
 <body>
-  <header class="header">
-    <div class="container">
-      <nav class="nav">
-        <div class="logo">What bird</div>
-        <div class="nav-links">
-          <a href="/">Chat</a>
-          <a href="/about">About</a>
-          <a href="/landing">Landing</a>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">What bird</div>
+                <div class="nav-links">
+                    <a href="/">Chat</a>
+                    <a href="/about">About</a>
+                    <a href="/landing">Landing</a>
+                </div>
+            </nav>
         </div>
-      </nav>
-    </div>
-  </header>
+    </header>
 
-  <main class="main-content">
-    <section class="left-section">
-      <h1 class="hero-title">Explore the beauty of nature</h1>
-      <p class="hero-subtitle">Brand new AI tool aims to make bird recognition fast, easy, and fun</p>
-      <button class="cta-button" onclick="window.location.href='/'">Start Exploring</button>
-    </section>
-    
-    <section class="right-section">
-      <div class="slider">
-        <img src="/assets/puffins.jpg" class="slide" alt="slide1">
-        <img src="/assets/photo2.jpg" class="slide" alt="slide2">
-        <img src="/assets/photo3.jpg" class="slide" alt="slide3">
-        <img src="/assets/photo4.jpg" class="slide" alt="slide4">
-      </div>
-    </section>
-  </main>
+    <main class="main-content">
+        <section class="left-section">
+            <h1 class="hero-title">Explore the beauty of nature</h1>
+            <p class="hero-subtitle">
+                Brand new AI tool aims to make bird recognition fast, easy, and fun
+            </p>
+            <button class="cta-button" onclick="window.location.href='/'">Start Exploring</button>
 
-  <script>
-    // Текстовая анимация
-    window.addEventListener('load', function() {
-      const title = document.querySelector('.hero-title');
-      const subtitle = document.querySelector('.hero-subtitle');
-      const button = document.querySelector('.cta-button');
-      [title, subtitle, button].forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(30px)'; });
-      setTimeout(()=>{ title.style.transition='all 0.8s ease'; title.style.opacity='1'; title.style.transform='translateY(0)'; },100);
-      setTimeout(()=>{ subtitle.style.transition='all 0.8s ease'; subtitle.style.opacity='1'; subtitle.style.transform='translateY(0)'; },300);
-      setTimeout(()=>{ button.style.transition='all 0.8s ease'; button.style.opacity='1'; button.style.transform='translateY(0)'; },500);
-    });
+            <!-- Мобильная копия первого изображения — отображается только на мобильных (см. CSS выше) -->
+            <img src="/assets/puffins.jpg" alt="Puffins" class="mobile-cover" />
+        </section>
+        
+        <section class="right-section">
+            <!-- СТОПКА ФОТО (десктоп) -->
+            <div class="slider" aria-hidden="false">
+                <img src="/assets/puffins.jpg" class="slide" alt="slide1">
+                <img src="/assets/photo2.jpg" class="slide" alt="slide2">
+                <img src="/assets/photo3.jpg" class="slide" alt="slide3">
+                <img src="/assets/photo4.jpg" class="slide" alt="slide4">
+            </div>
+        </section>
+    </main>
 
-    // Слайдер
-    const slider = document.querySelector('.slider');
-    let slides = Array.from(document.querySelectorAll('.slide'));
-    const isMobile = ('ontouchstart' in window) || window.innerWidth <= 768;
-    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (isMobile || prefersReduced) {
-      // Мобильный режим — fade
-      slider.classList.add('mobile');
-      slides.forEach((s,i)=>{ s.style.opacity = i===0 ? '1' : '0'; });
-    } else {
-      // Десктопный режим — 3D-анимация
-      const OFFSET_X=30, OFFSET_Y=30, SCALE_STEP=0.06, ROT_Y_STEP=2, ROT_X_STEP=1, BLUR_STEP=2, OPACITY_STEP=0.08;
-      const TRANSITION='transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
-
-      function applyStack() {
-        slides.forEach((s,i)=>{
-          s.style.transition=TRANSITION; s.style.zIndex=slides.length-i;
-          if(i===0){ s.style.transform="translateX(0) translateY(0) scale(1)"; s.style.opacity="1"; s.style.filter="blur(0px)"; }
-          else {
-            const tx=-OFFSET_X*i, ty=-OFFSET_Y*i, sc=1-i*SCALE_STEP, ry=-ROT_Y_STEP*i, rx=ROT_X_STEP*i, bl=BLUR_STEP*i, op=Math.max(0,1-i*OPACITY_STEP);
-            s.style.transform=`translateX(${tx}px) translateY(${ty}px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
-            s.style.opacity=`${op}`; s.style.filter=`blur(${bl}px)`;
-          }
+    <script>
+        // Текстовая анимация (не менял логику) — оставляем как было
+        window.addEventListener('load', function() {
+            const title = document.querySelector('.hero-title');
+            const subtitle = document.querySelector('.hero-subtitle');
+            const button = document.querySelector('.cta-button');
+            
+            title.style.opacity = '0';
+            title.style.transform = 'translateY(30px)';
+            subtitle.style.opacity = '0';
+            subtitle.style.transform = 'translateY(30px)';
+            button.style.opacity = '0';
+            button.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                title.style.transition = 'all 0.8s ease';
+                title.style.opacity = '1';
+                title.style.transform = 'translateY(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                subtitle.style.transition = 'all 0.8s ease';
+                subtitle.style.opacity = '1';
+                subtitle.style.transform = 'translateY(0)';
+            }, 300);
+            
+            setTimeout(() => {
+                button.style.transition = 'all 0.8s ease';
+                button.style.opacity = '1';
+                button.style.transform = 'translateY(0)';
+            }, 500);
         });
-      }
 
-      window.addEventListener('load', ()=>{ slides.forEach(s=>s.style.transition='none'); void slider.offsetWidth; applyStack(); });
+        // Слайдер (десктопный код оставлен без изменений) — но если устройство мобильное, скрываем десктопный слайдер
+        (function() {
+            const slider = document.querySelector('.slider');
+            const slides = Array.from(document.querySelectorAll('.slide'));
+            const mobileCover = document.querySelector('.mobile-cover');
 
-      let isAnimating=false;
-      function rotateSlides(){
-        if(isAnimating) return; isAnimating=true;
-        slides=Array.from(document.querySelectorAll('.slide'));
-        const first=slides[0]; if(!first){isAnimating=false;return;}
-        first.style.transition=TRANSITION;
-        first.style.transform="translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
-        first.style.opacity="0"; first.style.filter="blur(0px)";
-        setTimeout(()=>{
-          slider.appendChild(first);
-          slides=Array.from(document.querySelectorAll('.slide'));
-          const last=slides[slides.length-1];
-          last.style.transition='none';
-          const i=slides.length-1, tx=-OFFSET_X*i, ty=-OFFSET_Y*i, sc=1-i*SCALE_STEP, ry=-ROT_Y_STEP*i, rx=ROT_X_STEP*i, bl=BLUR_STEP*i;
-          last.style.transform=`translateX(${tx}px) translateY(${ty}px) scale(${sc}) rotateY(${ry}deg) rotateX(${rx}deg)`;
-          last.style.opacity='0'; last.style.filter=`blur(${bl}px)`;
-          void last.offsetWidth;
-          applyStack();
-          setTimeout(()=>isAnimating=false,950);
-        },920);
-      }
+            const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+            const smallScreen = window.innerWidth <= 768;
+            const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      setInterval(rotateSlides,3000);
-    }
-  </script>
+            // Если мобильное — прячем десктопный слайдер (на случай, если он пытается анимироваться)
+            if (isTouch || smallScreen || prefersReduced) {
+                if (slider) slider.style.display = 'none';
+                if (mobileCover) {
+                    // Покажем мобильное изображение (CSS также включено)
+                    mobileCover.style.display = 'block';
+                }
+                // Не запускаем сложные интервалы/анимации
+                return;
+            }
+
+            // Десктоп: оставляем текущую логику (копирую код анимации, как было)
+            const OFFSET_X = 30; // px на слой
+            const OFFSET_Y = 30; // px на слой
+            const SCALE_STEP = 0.06; // масштаб на слой
+            const ROT_Y_STEP = 2; // градусы rotateY на слой
+            const ROT_X_STEP = 1; // градусы rotateX на слой
+            const BLUR_STEP = 2; // px blur на слой
+            const OPACITY_STEP = 0.08; // прозрачность на слой
+            const TRANSITION = 'transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
+
+            function applyStack() {
+                const currentSlides = Array.from(document.querySelectorAll('.slide'));
+                currentSlides.forEach((s, i) => {
+                    s.style.transition = TRANSITION;
+                    s.style.zIndex = currentSlides.length - i;
+                    if (i === 0) {
+                        s.style.transform = "translateX(0px) translateY(0px) scale(1) rotateY(0deg) rotateX(0deg)";
+                        s.style.opacity = "1";
+                        s.style.filter = "blur(0px)";
+                    } else {
+                        const tx = -OFFSET_X * i;
+                        const ty = -OFFSET_Y * i;
+                        const scale = 1 - i * SCALE_STEP;
+                        const ry = -ROT_Y_STEP * i;
+                        const rx = ROT_X_STEP * i;
+                        const blur = BLUR_STEP * i;
+                        const opacity = Math.max(0, 1 - i * OPACITY_STEP);
+                        s.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+                        s.style.opacity = `${opacity}`;
+                        s.style.filter = `blur(${blur}px)`;
+                    }
+                });
+            }
+
+            // Начальная установка
+            window.addEventListener('load', () => {
+                // убираем возможные переходы перед первым рендером
+                Array.from(document.querySelectorAll('.slide')).forEach(s => s.style.transition = 'none');
+                void document.querySelector('.slider').offsetWidth;
+                applyStack();
+            });
+
+            let isAnimating = false;
+            function rotateSlides() {
+                if (isAnimating) return;
+                isAnimating = true;
+
+                let currentSlides = Array.from(document.querySelectorAll('.slide'));
+                const first = currentSlides[0];
+                if (!first) { isAnimating = false; return; }
+
+                first.style.transition = TRANSITION;
+                first.style.transform = "translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
+                first.style.opacity = "0";
+                first.style.filter = "blur(0px)";
+
+                const ANIM_OUT_MS = 920;
+                setTimeout(() => {
+                    slider.appendChild(first);
+                    currentSlides = Array.from(document.querySelectorAll('.slide'));
+                    const last = currentSlides[currentSlides.length - 1];
+
+                    last.style.transition = 'none';
+                    const i = currentSlides.length - 1;
+                    const tx = -OFFSET_X * i;
+                    const ty = -OFFSET_Y * i;
+                    const scale = 1 - i * SCALE_STEP;
+                    const ry = -ROT_Y_STEP * i;
+                    const rx = ROT_X_STEP * i;
+                    const blur = BLUR_STEP * i;
+
+                    last.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+                    last.style.opacity = '0';
+                    last.style.filter = `blur(${blur}px)`;
+
+                    void last.offsetWidth;
+                    applyStack();
+
+                    setTimeout(() => {
+                        isAnimating = false;
+                    }, 950);
+                }, ANIM_OUT_MS);
+            }
+
+            // Запуск автопрокрутки для десктопа
+            setInterval(rotateSlides, 3000);
+        })();
+    </script>
 </body>
 </html>

@@ -1,22 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
-<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-<link rel="shortcut icon" href="/assets/favicon.ico" />
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
-<link rel="manifest" href="/assets/site.webmanifest" />
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About - What bird</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Montserrat", "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            color: #334155;
+            font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            color: #4a4a4a;
             margin: 0;
             padding: 0;
             min-height: 100vh;
@@ -32,7 +24,7 @@
             flex-direction: column;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 30px 7px 24px;
+            padding: 24px 16px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -44,7 +36,7 @@
             color: #64748b;
             text-decoration: none;
             font-size: 1rem;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
             transition: color 0.3s ease;
             padding: 8px 0;
             align-self: flex-start;
@@ -57,39 +49,42 @@
         .content-area {
             flex: 1;
             display: flex;
-            justify-content: left;
-            align-items: left;
-            min-height: 400px;
+            justify-content: flex-start;
+            align-items: flex-start;
+            min-height: 300px;
+            width: 100%;
         }
 
         .content-text {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             line-height: 1.7;
-            color: #475569;
+            color: #4a4a4a;
             text-align: left;
-            max-width: 600px;
-            padding: 40px;
+            max-width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            word-wrap: break-word;
         }
 
         .placeholder-text {
-            color: #000000;
             font-style: normal;
-            font-size: 1.2rem;
-            font-family: Montserrat;
+            font-size: 1.1rem;
+            font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         /* Responsive design */
         @media (max-width: 768px) {
             .main-container {
-                padding: 60px 16px 16px;
+                padding: 16px;
             }
             
             .content-text {
-                padding: 24px;
+                padding: 16px;
+                font-size: 1rem;
             }
             
             .placeholder-text {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
         }
 

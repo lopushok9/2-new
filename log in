@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BirdScope Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', Arial, sans-serif;
+        background: #fff;
+        color: #1e293b;
+        min-height: 100vh;
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+      }
+      .container {
+        display: flex;
+        min-height: 100vh;
+        width: 100vw;
+        background: #fff;
+      }
+      .left-panel {
+        display: none;
+        background: #fff;
+        position: relative;
+        overflow: hidden;
+      }
+      @media (min-width: 1024px) {
+        .left-panel {
+          display: flex;
+          width: 50%;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+      @media (min-width: 1280px) {
+        .left-panel {
+          width: 60%;
+        }
+      }
+      .left-bg {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #f8fafc4d 0%, #d1fae54d 100%);
+        z-index: 0;
+      }
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4rem;
+        z-index: 1;
+      }
+      .icon-box {
+        width: 6rem;
+        height: 6rem;
+        background: #fff;
+        border-radius: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px 0 #e2e8f0;
+        border: 1px solid #f1f5f9;
+        font-size: 2.5rem;
+        transition: box-shadow 0.3s, transform 0.2s;
+      }
+      .icon-box:hover {
+        box-shadow: 0 4px 16px 0 #cbd5e1;
+        transform: translateY(-2px) scale(1.05);
+      }
+      .right-panel {
+        width: 100%;
+        min-height: 100vh;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+      }
+      @media (min-width: 1024px) {
+        .right-panel {
+          width: 50%;
+        }
+      }
+      @media (min-width: 1280px) {
+        .right-panel {
+          width: 40%;
+        }
+      }
+      .content-center {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 4rem;
+      }
+      .form-box {
+        width: 100%;
+        max-width: 24rem;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+      }
+      .header {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+      .logo {
+        width: 3rem;
+        height: 3rem;
+        background: #0f172a;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 1.5rem;
+        color: #fff;
+      }
+      .title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #0f172a;
+        margin: 0;
+      }
+      .subtitle {
+        color: #475569;
+        margin: 0;
+        font-size: 1rem;
+      }
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+      .input {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        background: #fff;
+        color: #1e293b;
+        transition: border 0.2s, box-shadow 0.2s;
+      }
+      .input:focus {
+        outline: none;
+        border-color: #0f172a;
+        box-shadow: 0 0 0 2px #0f172a33;
+      }
+      .button {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 0.75rem;
+        background: #0f172a;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 1px 4px 0 #e2e8f0;
+        transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+      .button:disabled {
+        background: #f1f5f9;
+        color: #94a3b8;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      .button:not(:disabled):hover {
+        background: #1e293b;
+        box-shadow: 0 2px 8px 0 #cbd5e1;
+        transform: translateY(-2px);
+      }
+      .signin-link {
+        text-align: center;
+        font-size: 0.95rem;
+        color: #64748b;
+      }
+      .signin-link a {
+        color: #0f172a;
+        text-decoration: underline;
+        margin-left: 0.25rem;
+        font-weight: 500;
+        transition: color 0.2s;
+      }
+      .signin-link a:hover {
+        color: #334155;
+      }
+      .footer {
+        padding: 1.5rem 4rem;
+        border-top: 1px solid #f1f5f9;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #94a3b8;
+        background: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-panel">
+        <div class="left-bg"></div>
+        <div class="icon-grid">
+          <div class="icon-box">🐦</div>
+          <div class="icon-box">🦅</div>
+          <div class="icon-box">🦉</div>
+          <div class="icon-box">🦜</div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="content-center">
+          <form class="form-box">
+            <div class="header">
+              <div class="logo">🐦</div>
+              <div>
+                <h1 class="title">Welcome to BirdScope</h1>
+                <p class="subtitle">Discover and identify birds with our AI-powered platform</p>
+              </div>
+            </div>
+            <div class="form">
+              <input class="input" type="email" placeholder="Enter your email" required />
+              <button class="button" type="submit">Get Started</button>
+              <div class="signin-link">
+                Already have an account?
+                <a href="#">Sign in</a>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="footer">
+          What Bird
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

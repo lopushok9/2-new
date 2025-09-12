@@ -1,43 +1,4 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -253,10 +214,10 @@
           <div class="roadmap-content">
             <div class="roadmap-title">Advanced Features & Expansion</div>
             <ul>
-              <li><span class="roadmap-feature-dot active"></span>AI-powered bird call recognition</li>
-              <li><span class="roadmap-feature-dot active"></span>Expanded database (1000+ birds)</li>
-              <li><span class="roadmap-feature-dot"></span>Social sharing features</li>
-              <li><span class="roadmap-feature-dot"></span>Offline mode support</li>
+              <li><span class="roadmap-feature-dot active"></span>Build fundamental architecture</li>
+              <li><span class="roadmap-feature-dot active"></span>Launch subscription model</li>
+              <li><span class="roadmap-feature-dot"></span>Create blog section with tips</li>
+              <li><span class="roadmap-feature-dot"></span>Token utility</li>
             </ul>
           </div>
         </div>
@@ -264,16 +225,16 @@
           <div class="roadmap-quarter-info">
             <div class="roadmap-dot"></div>
             <div class="roadmap-bird">🦉</div>
-            <div class="roadmap-quarter-title">Q4 2026</div>
+            <div class="roadmap-quarter-title">Q4 2025</div>
             <div class="roadmap-status planned">Planned</div>
           </div>
           <div class="roadmap-content">
             <div class="roadmap-title">Community & Integration</div>
             <ul>
-              <li><span class="roadmap-feature-dot"></span>Community forums</li>
-              <li><span class="roadmap-feature-dot"></span>Integration with birdwatching apps</li>
-              <li><span class="roadmap-feature-dot"></span>Advanced analytics dashboard</li>
-              <li><span class="roadmap-feature-dot"></span>Global species map</li>
+              <li><span class="roadmap-feature-dot"></span>Marketing via social media, forums</li>
+              <li><span class="roadmap-feature-dot"></span>Voice identification</li>
+              <li><span class="roadmap-feature-dot"></span>Improve identification mechanism</li>
+              <li><span class="roadmap-feature-dot"></span>Species map</li>
             </ul>
           </div>
         </div>
@@ -287,9 +248,9 @@
           <div class="roadmap-content">
             <div class="roadmap-title">Global Expansion & Education</div>
             <ul>
-              <li><span class="roadmap-feature-dot"></span>Multilingual support</li>
-              <li><span class="roadmap-feature-dot"></span>Educational content library</li>
-              <li><span class="roadmap-feature-dot"></span>AR bird visualization</li>
+              <li><span class="roadmap-feature-dot"></span>Implement social network</li>
+              <li><span class="roadmap-feature-dot"></span>Educational content</li>
+              <li><span class="roadmap-feature-dot"></span>Create community</li>
               <li><span class="roadmap-feature-dot"></span>Partnerships with conservation groups</li>
             </ul>
           </div>

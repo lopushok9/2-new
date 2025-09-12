@@ -42,6 +42,10 @@ app.get('/landing', (req, res) => {
   res.render('landing');
 });
 
+app.get('/roadmap', (req, res) => {
+  res.render('roadmap');
+});
+
 // POST-запрос с изображением или текстом
 app.post('/', upload.single('image'), async (req, res) => {
   try {

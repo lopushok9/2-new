@@ -32,6 +32,9 @@ const upload = multer({
 // Инициализация Supabase клиента
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing in environment variables');
+}
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: false, // Отключено для serverless
@@ -130,7 +133,6 @@ app.post('/', upload.single('image'), async (req, res) => {
 
 // Новый маршрут: Регистрация пользователя
 app.post('/api/signup', async (req, res) => {
-  console.log('Signup request received:', req.body); // Отладка для /api/signup
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -142,31 +144,26 @@ app.post('/api/signup', async (req, res) => {
   }
 
   try {
-    // Регистрация пользователя в Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { name }, // Дополнительные метаданные пользователя
+        data: { name },
       },
     });
 
     if (authError) {
-      console.log('Signup auth error:', authError.message); // Отладка
       return res.status(400).json({ error: authError.message });
     }
 
-    // (Опционально) Добавление профиля в таблицу profiles
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .insert([{ user_id: authData.user.id, name, email }]);
 
     if (profileError) {
-      console.log('Signup profile error:', profileError.message); // Отладка
       return res.status(500).json({ error: 'Failed to create profile', details: profileError.message });
     }
 
-    console.log('Signup successful for user:', email); // Отладка
     return res.status(201).json({
       message: 'User registered successfully',
       user: { id: authData.user.id, email: authData.user.email, name },
@@ -179,39 +176,37 @@ app.post('/api/signup', async (req, res) => {
 
 // Новый маршрут: Авторизация пользователя
 app.post('/api/signin', async (req, res) => {
-  console.log('Signin request received:', req.body); // Отладка для /api/signin
   if (req.method !== 'POST') {
-    console.log('Signin method not POST'); // Отладка
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { email, password } = req.body;
 
   if (!email || !password) {
-    console.log('Signin missing email or password'); // Отладка
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
-    console.log('Calling Supabase signInWithPassword for:', email); // Отладка
-    // Авторизация пользователя
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      console.log('Signin error:', error.message); // Отладка
       return res.status(401).json({ error: error.message });
     }
 
-    console.log('Signin successful for user:', email); // Отладка
+    // Проверка на существование session
+    if (!data.session || !data.session.access_token) {
+      return res.status(500).json({ error: 'Session or access token not returned by Supabase' });
+    }
+
     return res.status(200).json({
       message: 'User signed in successfully',
       user: {
         id: data.user.id,
         email: data.user.email,
-        name: data.user.user_metadata.name,
+        name: data.user.user_metadata?.name || 'Unknown',
       },
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,

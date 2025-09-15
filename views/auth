@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .auth-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .switch-form {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .switch-form a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .switch-form a:hover {
+            text-decoration: underline;
+        }
+        #message {
+            text-align: center;
+            margin-top: 1rem;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h2 id="form-title">Sign In</h2>
+        <form id="auth-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group" id="name-group" style="display: none;">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <button type="submit" id="submit-btn">Sign In</button>
+        </form>
+        <div class="switch-form">
+            <p>Not registered? <a href="#" id="toggle-form">Sign Up</a></p>
+        </div>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('auth-form');
+        const toggleForm = document.getElementById('toggle-form');
+        const formTitle = document.getElementById('form-title');
+        const submitBtn = document.getElementById('submit-btn');
+        const nameGroup = document.getElementById('name-group');
+        const messageDiv = document.getElementById('message');
+
+        let isSignUp = false;
+
+        toggleForm.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUp = !isSignUp;
+            formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            nameGroup.style.display = isSignUp ? 'block' : 'none';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = isSignUp ? document.getElementById('name').value : null;
+
+            const url = isSignUp ? '/api/signup' : '/api/signin';
+            const body = isSignUp ? { email, password, name } : { email, password };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    messageDiv.textContent = data.error || 'An error occurred';
+                    return;
+                }
+
+                messageDiv.textContent = data.message || 'Success!';
+                messageDiv.style.color = '#28a745';
+
+                if (data.access_token) {
+                    // Сохраните токен (например, в localStorage для простоты)
+                    localStorage.setItem('access_token', data.access_token);
+                    alert('Logged in successfully! Token saved.');
+                }
+
+                // Очистка формы
+                form.reset();
+            } catch (error) {
+                messageDiv.textContent = 'Network error or server issue';
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

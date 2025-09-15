@@ -50,9 +50,6 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 1rem;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
         }
         button:hover {
             background-color: #0056b3;
@@ -108,6 +105,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing auth form'); // Отладка: проверка загрузки
+
             const form = document.getElementById('auth-form');
             const toggleForm = document.getElementById('toggle-form');
             const formTitle = document.getElementById('form-title');
@@ -122,27 +121,41 @@
                 return;
             }
 
+            console.log('All elements found, attaching events'); // Отладка: проверка элементов
+
             let isSignUp = false;
 
             toggleForm.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('Toggle clicked, switching to:', isSignUp ? 'Sign In' : 'Sign Up'); // Отладка
                 isSignUp = !isSignUp;
                 formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
                 submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
                 submitBtn.type = 'submit'; // Сбрасываем тип на submit
                 submitBtn.classList.remove('link'); // Удаляем стиль ссылки
                 nameGroup.style.display = isSignUp ? 'block' : 'none';
+                messageDiv.textContent = ''; // Очищаем сообщение
+                messageDiv.style.color = '#dc3545'; // Сбрасываем цвет
+                form.reset(); // Сбрасываем форму
             });
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                console.log('Submit clicked, mode:', isSignUp ? 'Sign Up' : 'Sign In'); // Отладка: срабатывание submit
 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 const name = isSignUp ? document.getElementById('name').value : null;
 
+                if (!email || !password) {
+                    messageDiv.textContent = 'Email and password are required';
+                    return;
+                }
+
                 const url = isSignUp ? '/api/signup' : '/api/signin';
                 const body = isSignUp ? { email, password, name } : { email, password };
+
+                console.log('Sending request to:', url, 'with body:', body); // Отладка: перед запросом
 
                 try {
                     const response = await fetch(url, {
@@ -151,7 +164,10 @@
                         body: JSON.stringify(body),
                     });
 
+                    console.log('Response status:', response.status); // Отладка: статус ответа
+
                     const data = await response.json();
+                    console.log('Response data:', data); // Отладка: данные ответа
 
                     if (!response.ok) {
                         messageDiv.textContent = data.error || 'An error occurred';
@@ -167,10 +183,12 @@
                         localStorage.setItem('access_token', data.access_token);
                         alert('Logged in successfully! Token saved.');
                         if (!isSignUp) {
+                            // Встраиваем переход в кнопку Sign In
                             submitBtn.textContent = 'Go to Landing';
                             submitBtn.type = 'button'; // Изменяем тип на button
                             submitBtn.classList.add('link'); // Добавляем стиль ссылки
                             submitBtn.onclick = () => {
+                                console.log('Redirecting to /landing'); // Отладка
                                 window.location.href = '/landing';
                             };
                         }

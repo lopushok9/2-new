@@ -142,17 +142,15 @@
                 messageDiv.style.color = '#28a745';
 
                 if (data.access_token) {
-                    // Сохраните токен в localStorage
                     localStorage.setItem('access_token', data.access_token);
                     alert('Logged in successfully! Token saved.');
-
-                    // Перенаправление на /landing после успешного Sign In
                     if (!isSignUp) {
-                        window.location.href = '/landing';
+                        setTimeout(() => {
+                            window.location.href = '/landing';
+                        }, 100);
                     }
                 }
 
-                // Очистка формы
                 form.reset();
             } catch (error) {
                 messageDiv.textContent = 'Network error or server issue';

@@ -125,22 +125,20 @@
 
             let isSignUp = false;
 
-            // Обработчик переключения
             toggleForm.addEventListener('click', (e) => {
                 e.preventDefault();
                 console.log('Toggle clicked, switching to:', isSignUp ? 'Sign In' : 'Sign Up');
                 isSignUp = !isSignUp;
                 formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
                 submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-                submitBtn.type = 'submit'; // Сбрасываем тип на submit
-                submitBtn.classList.remove('link'); // Удаляем стиль ссылки
+                submitBtn.type = 'submit';
+                submitBtn.classList.remove('link');
                 nameGroup.style.display = isSignUp ? 'block' : 'none';
-                messageDiv.textContent = ''; // Очищаем сообщение
-                messageDiv.style.color = '#dc3545'; // Сбрасываем цвет
-                form.reset(); // Сбрасываем форму
+                messageDiv.textContent = '';
+                messageDiv.style.color = '#dc3545';
+                form.reset();
             });
 
-            // Обработчик submit формы
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
@@ -173,7 +171,7 @@
 
                     if (!response.ok) {
                         messageDiv.textContent = data.error || 'An error occurred';
-                        submitBtn.type = 'submit'; // Сбрасываем тип на submit
+                        submitBtn.type = 'submit';
                         submitBtn.classList.remove('link');
                         return;
                     }
@@ -185,10 +183,9 @@
                         localStorage.setItem('access_token', data.access_token);
                         alert('Logged in successfully! Token saved.');
                         if (!isSignUp) {
-                            // Встраиваем переход в кнопку Sign In
                             submitBtn.textContent = 'Go to Landing';
-                            submitBtn.type = 'button'; // Изменяем тип на button
-                            submitBtn.classList.add('link'); // Добавляем стиль ссылки
+                            submitBtn.type = 'button';
+                            submitBtn.classList.add('link');
                             submitBtn.onclick = () => {
                                 console.log('Redirecting to /landing');
                                 window.location.href = '/landing';
@@ -200,18 +197,19 @@
                 } catch (error) {
                     messageDiv.textContent = 'Network error or server issue';
                     console.error('Error:', error);
-                    submitBtn.type = 'submit'; // Сбрасываем тип на submit
+                    submitBtn.type = 'submit';
                     submitBtn.classList.remove('link');
                 }
             });
 
-            // Дополнительная привязка к кнопке для гарантии срабатывания
+            // Принудительная отправка при клике на кнопку
             submitBtn.addEventListener('click', (e) => {
-                console.log('Button click triggered'); // Отладка: клик по кнопке
-                if (form.checkValidity()) { // Проверяем валидность формы
+                console.log('Button click triggered');
+                if (form.checkValidity()) {
                     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
                 } else {
                     console.log('Form invalid, not submitting');
+                    messageDiv.textContent = 'Please fill all required fields';
                 }
             });
         });

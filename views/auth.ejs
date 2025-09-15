@@ -105,7 +105,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, initializing auth form'); // Отладка: проверка загрузки
+            console.log('DOM loaded, initializing auth form');
 
             const form = document.getElementById('auth-form');
             const toggleForm = document.getElementById('toggle-form');
@@ -121,13 +121,14 @@
                 return;
             }
 
-            console.log('All elements found, attaching events'); // Отладка: проверка элементов
+            console.log('All elements found, attaching events');
 
             let isSignUp = false;
 
+            // Обработчик переключения
             toggleForm.addEventListener('click', (e) => {
                 e.preventDefault();
-                console.log('Toggle clicked, switching to:', isSignUp ? 'Sign In' : 'Sign Up'); // Отладка
+                console.log('Toggle clicked, switching to:', isSignUp ? 'Sign In' : 'Sign Up');
                 isSignUp = !isSignUp;
                 formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
                 submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
@@ -139,9 +140,10 @@
                 form.reset(); // Сбрасываем форму
             });
 
+            // Обработчик submit формы
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                console.log('Submit clicked, mode:', isSignUp ? 'Sign Up' : 'Sign In'); // Отладка: срабатывание submit
+                console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
@@ -155,7 +157,7 @@
                 const url = isSignUp ? '/api/signup' : '/api/signin';
                 const body = isSignUp ? { email, password, name } : { email, password };
 
-                console.log('Sending request to:', url, 'with body:', body); // Отладка: перед запросом
+                console.log('Sending request to:', url, 'with body:', body);
 
                 try {
                     const response = await fetch(url, {
@@ -164,10 +166,10 @@
                         body: JSON.stringify(body),
                     });
 
-                    console.log('Response status:', response.status); // Отладка: статус ответа
+                    console.log('Response status:', response.status);
 
                     const data = await response.json();
-                    console.log('Response data:', data); // Отладка: данные ответа
+                    console.log('Response data:', data);
 
                     if (!response.ok) {
                         messageDiv.textContent = data.error || 'An error occurred';
@@ -188,7 +190,7 @@
                             submitBtn.type = 'button'; // Изменяем тип на button
                             submitBtn.classList.add('link'); // Добавляем стиль ссылки
                             submitBtn.onclick = () => {
-                                console.log('Redirecting to /landing'); // Отладка
+                                console.log('Redirecting to /landing');
                                 window.location.href = '/landing';
                             };
                         }
@@ -200,6 +202,16 @@
                     console.error('Error:', error);
                     submitBtn.type = 'submit'; // Сбрасываем тип на submit
                     submitBtn.classList.remove('link');
+                }
+            });
+
+            // Дополнительная привязка к кнопке для гарантии срабатывания
+            submitBtn.addEventListener('click', (e) => {
+                console.log('Button click triggered'); // Отладка: клик по кнопке
+                if (form.checkValidity()) { // Проверяем валидность формы
+                    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                } else {
+                    console.log('Form invalid, not submitting');
                 }
             });
         });

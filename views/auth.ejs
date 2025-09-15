@@ -70,6 +70,23 @@
             margin-top: 1rem;
             color: #dc3545;
         }
+        #go-to-landing {
+            display: none;
+            margin-top: 1rem;
+        }
+        #go-to-landing a {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        #go-to-landing a:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -94,6 +111,9 @@
             <p>Not registered? <a href="#" id="toggle-form">Sign Up</a></p>
         </div>
         <div id="message"></div>
+        <div id="go-to-landing">
+            <a href="/landing">Go to Landing Page</a>
+        </div>
     </div>
 
     <script>
@@ -103,6 +123,7 @@
         const submitBtn = document.getElementById('submit-btn');
         const nameGroup = document.getElementById('name-group');
         const messageDiv = document.getElementById('message');
+        const goToLanding = document.getElementById('go-to-landing');
 
         let isSignUp = false;
 
@@ -112,6 +133,7 @@
             formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
             submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
             nameGroup.style.display = isSignUp ? 'block' : 'none';
+            goToLanding.style.display = 'none'; // Скрываем ссылку при переключении
         });
 
         form.addEventListener('submit', async (e) => {
@@ -135,6 +157,7 @@
 
                 if (!response.ok) {
                     messageDiv.textContent = data.error || 'An error occurred';
+                    goToLanding.style.display = 'none'; // Скрываем ссылку при ошибке
                     return;
                 }
 
@@ -145,9 +168,7 @@
                     localStorage.setItem('access_token', data.access_token);
                     alert('Logged in successfully! Token saved.');
                     if (!isSignUp) {
-                        setTimeout(() => {
-                            window.location.href = '/landing';
-                        }, 100);
+                        goToLanding.style.display = 'block'; // Показываем ссылку только после Sign In
                     }
                 }
 
@@ -155,6 +176,7 @@
             } catch (error) {
                 messageDiv.textContent = 'Network error or server issue';
                 console.error('Error:', error);
+                goToLanding.style.display = 'none'; // Скрываем ссылку при ошибке
             }
         });
     </script>

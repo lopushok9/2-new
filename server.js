@@ -58,6 +58,10 @@ app.get('/roadmap', (req, res) => {
   res.render('roadmap');
 });
 
+app.get('/auth', (req, res) => {
+  res.render('auth');
+});
+
 // POST-запрос с изображением или текстом
 app.post('/', upload.single('image'), async (req, res) => {
   try {

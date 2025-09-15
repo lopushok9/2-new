@@ -130,6 +130,7 @@ app.post('/', upload.single('image'), async (req, res) => {
 
 // Новый маршрут: Регистрация пользователя
 app.post('/api/signup', async (req, res) => {
+  console.log('Signup request received:', req.body); // Отладка для /api/signup
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -151,6 +152,7 @@ app.post('/api/signup', async (req, res) => {
     });
 
     if (authError) {
+      console.log('Signup auth error:', authError.message); // Отладка
       return res.status(400).json({ error: authError.message });
     }
 
@@ -160,9 +162,11 @@ app.post('/api/signup', async (req, res) => {
       .insert([{ user_id: authData.user.id, name, email }]);
 
     if (profileError) {
+      console.log('Signup profile error:', profileError.message); // Отладка
       return res.status(500).json({ error: 'Failed to create profile', details: profileError.message });
     }
 
+    console.log('Signup successful for user:', email); // Отладка
     return res.status(201).json({
       message: 'User registered successfully',
       user: { id: authData.user.id, email: authData.user.email, name },
@@ -175,17 +179,21 @@ app.post('/api/signup', async (req, res) => {
 
 // Новый маршрут: Авторизация пользователя
 app.post('/api/signin', async (req, res) => {
+  console.log('Signin request received:', req.body); // Отладка для /api/signin
   if (req.method !== 'POST') {
+    console.log('Signin method not POST'); // Отладка
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { email, password } = req.body;
 
   if (!email || !password) {
+    console.log('Signin missing email or password'); // Отладка
     return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
+    console.log('Calling Supabase signInWithPassword for:', email); // Отладка
     // Авторизация пользователя
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -193,9 +201,11 @@ app.post('/api/signin', async (req, res) => {
     });
 
     if (error) {
+      console.log('Signin error:', error.message); // Отладка
       return res.status(401).json({ error: error.message });
     }
 
+    console.log('Signin successful for user:', email); // Отладка
     return res.status(200).json({
       message: 'User signed in successfully',
       user: {

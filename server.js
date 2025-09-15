@@ -3,6 +3,8 @@ const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+// Новый импорт для Supabase
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 
@@ -25,6 +27,16 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   }
+});
+
+// Инициализация Supabase клиента
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false, // Отключено для serverless
+    persistSession: false, // Не нужно для сервера
+  },
 });
 
 // Маршрут GET /
@@ -109,6 +121,90 @@ app.post('/', upload.single('image'), async (req, res) => {
       error: 'Internal server error',
       message: error.message
     });
+  }
+});
+
+// Новый маршрут: Регистрация пользователя
+app.post('/api/signup', async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { email, password, name } = req.body;
+
+  if (!email || !password || !name) {
+    return res.status(400).json({ error: 'Email, password, and name are required' });
+  }
+
+  try {
+    // Регистрация пользователя в Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name }, // Дополнительные метаданные пользователя
+      },
+    });
+
+    if (authError) {
+      return res.status(400).json({ error: authError.message });
+    }
+
+    // (Опционально) Добавление профиля в таблицу profiles
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .insert([{ user_id: authData.user.id, name, email }]);
+
+    if (profileError) {
+      return res.status(500).json({ error: 'Failed to create profile', details: profileError.message });
+    }
+
+    return res.status(201).json({
+      message: 'User registered successfully',
+      user: { id: authData.user.id, email: authData.user.email, name },
+    });
+  } catch (err) {
+    console.error('Signup error:', err);
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+});
+
+// Новый маршрут: Авторизация пользователя
+app.post('/api/signin', async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  try {
+    // Авторизация пользователя
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return res.status(401).json({ error: error.message });
+    }
+
+    return res.status(200).json({
+      message: 'User signed in successfully',
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata.name,
+      },
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    });
+  } catch (err) {
+    console.error('Signin error:', err);
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 });
 

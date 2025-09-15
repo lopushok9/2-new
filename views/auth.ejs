@@ -117,67 +117,76 @@
     </div>
 
     <script>
-        const form = document.getElementById('auth-form');
-        const toggleForm = document.getElementById('toggle-form');
-        const formTitle = document.getElementById('form-title');
-        const submitBtn = document.getElementById('submit-btn');
-        const nameGroup = document.getElementById('name-group');
-        const messageDiv = document.getElementById('message');
-        const goToLanding = document.getElementById('go-to-landing');
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('auth-form');
+            const toggleForm = document.getElementById('toggle-form');
+            const formTitle = document.getElementById('form-title');
+            const submitBtn = document.getElementById('submit-btn');
+            const nameGroup = document.getElementById('name-group');
+            const messageDiv = document.getElementById('message');
+            const goToLanding = document.getElementById('go-to-landing');
 
-        let isSignUp = false;
-
-        toggleForm.addEventListener('click', (e) => {
-            e.preventDefault();
-            isSignUp = !isSignUp;
-            formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-            submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-            nameGroup.style.display = isSignUp ? 'block' : 'none';
-            goToLanding.style.display = 'none'; // Скрываем ссылку при переключении
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const name = isSignUp ? document.getElementById('name').value : null;
-
-            const url = isSignUp ? '/api/signup' : '/api/signin';
-            const body = isSignUp ? { email, password, name } : { email, password };
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
+            if (!form || !toggleForm || !formTitle || !submitBtn || !nameGroup || !messageDiv || !goToLanding) {
+                console.error('One or more elements not found:', {
+                    form, toggleForm, formTitle, submitBtn, nameGroup, messageDiv, goToLanding
                 });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    messageDiv.textContent = data.error || 'An error occurred';
-                    goToLanding.style.display = 'none'; // Скрываем ссылку при ошибке
-                    return;
-                }
-
-                messageDiv.textContent = data.message || 'Success!';
-                messageDiv.style.color = '#28a745';
-
-                if (data.access_token) {
-                    localStorage.setItem('access_token', data.access_token);
-                    alert('Logged in successfully! Token saved.');
-                    if (!isSignUp) {
-                        goToLanding.style.display = 'block'; // Показываем ссылку только после Sign In
-                    }
-                }
-
-                form.reset();
-            } catch (error) {
-                messageDiv.textContent = 'Network error or server issue';
-                console.error('Error:', error);
-                goToLanding.style.display = 'none'; // Скрываем ссылку при ошибке
+                return;
             }
+
+            let isSignUp = false;
+
+            toggleForm.addEventListener('click', (e) => {
+                e.preventDefault();
+                isSignUp = !isSignUp;
+                formTitle.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+                submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+                nameGroup.style.display = isSignUp ? 'block' : 'none';
+                goToLanding.style.display = 'none';
+            });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const name = isSignUp ? document.getElementById('name').value : null;
+
+                const url = isSignUp ? '/api/signup' : '/api/signin';
+                const body = isSignUp ? { email, password, name } : { email, password };
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        messageDiv.textContent = data.error || 'An error occurred';
+                        goToLanding.style.display = 'none';
+                        return;
+                    }
+
+                    messageDiv.textContent = data.message || 'Success!';
+                    messageDiv.style.color = '#28a745';
+
+                    if (data.access_token) {
+                        localStorage.setItem('access_token', data.access_token);
+                        alert('Logged in successfully! Token saved.');
+                        if (!isSignUp) {
+                            goToLanding.style.display = 'block';
+                        }
+                    }
+
+                    form.reset();
+                } catch (error) {
+                    messageDiv.textContent = 'Network error or server issue';
+                    console.error('Error:', error);
+                    goToLanding.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>

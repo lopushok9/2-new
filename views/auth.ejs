@@ -250,8 +250,12 @@
         </div>
     </div>
 
+<!-- ... (остальной код auth.ejs до <script>) -->
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM fully loaded, initializing auth script');
+
         const form = document.getElementById('auth-form');
         const toggleForm = document.getElementById('toggle-form');
         const formTitle = document.getElementById('form-title');
@@ -285,6 +289,7 @@
             messageDiv.textContent = '';
             messageDiv.style.color = '#dc3545';
             form.reset();
+            console.log('Toggled to:', isSignUp ? 'Sign Up' : 'Sign In');
         });
 
         form.addEventListener('submit', async (e) => {
@@ -336,14 +341,14 @@
                 messageDiv.style.color = '#28a745';
 
                 if (data.access_token) {
-                    // Удаляем localStorage, полагаемся на cookie
-                    // localStorage.setItem('access_token', data.access_token);
-                    alert('Logged in successfully!');
+                    localStorage.setItem('access_token', data.access_token);
+                    alert('Logged in successfully! Token saved.');
                     if (!isSignUp) {
                         submitBtn.textContent = 'Go to Landing';
                         submitBtn.type = 'button';
                         submitBtn.classList.add('link');
                         submitBtn.onclick = () => {
+                            console.log('Redirecting to /landing');
                             window.location.href = '/landing';
                         };
                     }
@@ -371,6 +376,38 @@
                 messageDiv.textContent = 'Please fill all required fields correctly';
             }
         });
-    </script>
+
+        // Обработчик перехода на /profile с токеном
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.getAttribute('href') === '/profile') {
+                e.preventDefault();
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    fetch('/profile', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Unauthorized');
+                        return response.text();
+                    })
+                    .then(html => {
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    })
+                    .catch(err => {
+                        console.error('Profile fetch error:', err);
+                        window.location.href = '/auth';
+                    });
+                } else {
+                    window.location.href = '/auth';
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>

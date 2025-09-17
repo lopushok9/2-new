@@ -65,6 +65,17 @@ app.get('/auth', (req, res) => {
   res.render('auth');
 });
 
+app.get('/profile', authenticate, async (req, res) => {
+    const { user } = req;
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('name, email')
+        .eq('user_id', user.id)
+        .single();
+    if (error) return res.status(500).json({ error: error.message });
+    res.render('profile', { user: data });
+});
+
 // POST-запрос с изображением или текстом
 app.post('/', upload.single('image'), async (req, res) => {
   try {

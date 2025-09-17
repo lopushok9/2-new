@@ -204,7 +204,7 @@
           </div>
           <div>
             <div class="avatar-row">
-              <div class="profile-avatar" id="user-avatar">SJ</div>
+              <div class="profile-avatar" id="user-avatar"><%= user.name.charAt(0) + (user.name.split(' ')[1] || '').charAt(0) %></div>
             </div>
             <div class="info-list">
               <div class="info-row">
@@ -213,7 +213,7 @@
                 </svg>
                 <div>
                   <div class="info-text-label">Full Name</div>
-                  <div class="info-text-value" id="user-name">Sarah Johnson</div>
+                  <div class="info-text-value" id="user-name"><%= user.name %></div>
                 </div>
               </div>
               <div class="info-row">
@@ -223,7 +223,7 @@
                 </svg>
                 <div>
                   <div class="info-text-label">Email Address</div>
-                  <div class="info-text-value" id="user-email">sarah.johnson@birdscope.com</div>
+                  <div class="info-text-value" id="user-email"><%= user.email %></div>
                 </div>
               </div>
             </div>

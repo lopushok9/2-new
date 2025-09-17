@@ -4,6 +4,7 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
+const cookieParser = require('cookie-parser'); // Добавляем для работы с cookies
 
 const app = express();
 
@@ -11,6 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // Добавляем парсер cookies
 
 // Настройка пути к шаблонам
 app.set('views', path.join(__dirname, 'views'));
@@ -36,22 +38,30 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-// Middleware для аутентификации (исправленный)
+// Middleware для аутентификации (обновленный с поддержкой cookies)
 const authenticate = async (req, res, next) => {
-  // Читаем токен из заголовка Authorization: Bearer <token>
+  // Читаем токен из cookies или заголовка Authorization
+  const tokenFromCookie = req.cookies.access_token;
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  const token = tokenFromCookie || tokenFromHeader;
+
+  console.log('Authenticate middleware - Token from cookie:', tokenFromCookie); // Отладка
+  console.log('Authenticate middleware - Token from header:', tokenFromHeader); // Отладка
 
   if (!token) {
-    return res.status(401).redirect('/auth'); // Перенаправление на логин, если токен отсутствует
+    console.log('No token provided, redirecting to /auth');
+    return res.status(401).redirect('/auth');
   }
 
   try {
     const { data, error } = await supabase.auth.getUser(token);
     if (error || !data.user) {
-      return res.status(401).redirect('/auth'); // Токен недействителен
+      console.log('Invalid token error:', error?.message);
+      return res.status(401).redirect('/auth');
     }
 
+    console.log('User authenticated:', data.user.email);
     req.user = data.user;
     next();
   } catch (err) {
@@ -60,7 +70,7 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// Маршруты (остальные без изменений)
+// Маршруты
 app.get('/', (req, res) => res.render('index', { historyItems: [] }));
 app.get('/about', (req, res) => res.render('about'));
 app.get('/landing', (req, res) => res.render('landing'));
@@ -158,10 +168,18 @@ app.post('/api/signin', async (req, res) => {
       return res.status(500).json({ error: 'Session or access token not returned by Supabase' });
     }
 
+    // Устанавливаем HttpOnly cookie с токеном
+    res.cookie('access_token', data.session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Только для HTTPS в продакшене
+      sameSite: 'strict',
+      maxAge: 3600000, // 1 час
+    });
+
     res.status(200).json({
       message: 'User signed in successfully',
       user: { id: data.user.id, email: data.user.email, name: data.user.user_metadata?.name || 'Unknown' },
-      access_token: data.session.access_token,
+      access_token: data.session.access_token, // Для обратной совместимости с клиентом
       refresh_token: data.session.refresh_token,
     });
   } catch (err) {
@@ -173,11 +191,11 @@ app.post('/api/signin', async (req, res) => {
 // Маршрут для профиля (защищенный)
 app.get('/profile', authenticate, async (req, res) => {
   try {
-    const { user } = req;
+    console.log('Fetching profile for user:', req.user.email);
     const { data, error } = await supabase
       .from('profiles')
       .select('name, email')
-      .eq('user_id', user.id)
+      .eq('user_id', req.user.id)
       .single();
 
     if (error) throw new Error(error.message);

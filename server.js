@@ -36,19 +36,31 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-// Middleware для аутентификации
+// Middleware для аутентификации (исправленный)
 const authenticate = async (req, res, next) => {
-  const token = req.cookies.access_token || localStorage.getItem('access_token'); // Используем cookie или localStorage (для теста)
-  if (!token) return res.status(401).redirect('/auth');
+  // Читаем токен из заголовка Authorization: Bearer <token>
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) return res.status(401).redirect('/auth');
+  if (!token) {
+    return res.status(401).redirect('/auth'); // Перенаправление на логин, если токен отсутствует
+  }
 
-  req.user = data.user;
-  next();
+  try {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return res.status(401).redirect('/auth'); // Токен недействителен
+    }
+
+    req.user = data.user;
+    next();
+  } catch (err) {
+    console.error('Auth middleware error:', err);
+    res.status(500).redirect('/auth');
+  }
 };
 
-// Маршруты
+// Маршруты (остальные без изменений)
 app.get('/', (req, res) => res.render('index', { historyItems: [] }));
 app.get('/about', (req, res) => res.render('about'));
 app.get('/landing', (req, res) => res.render('landing'));
@@ -158,6 +170,7 @@ app.post('/api/signin', async (req, res) => {
   }
 });
 
+// Маршрут для профиля (защищенный)
 app.get('/profile', authenticate, async (req, res) => {
   try {
     const { user } = req;
@@ -172,7 +185,7 @@ app.get('/profile', authenticate, async (req, res) => {
     res.render('profile', { user: data });
   } catch (err) {
     console.error('Profile fetch error:', err);
-    res.status(500).redirect('/auth'); // Перенаправление при ошибке
+    res.status(500).redirect('/auth');
   }
 });
 

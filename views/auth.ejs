@@ -250,129 +250,156 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('auth-form');
-            const toggleForm = document.getElementById('toggle-form');
-            const formTitle = document.getElementById('form-title');
-            const formSubtitle = document.getElementById('form-subtitle');
-            const submitBtn = document.getElementById('submit-btn');
-            const nameGroup = document.getElementById('name-group');
-            const messageDiv = document.getElementById('message');
-            const toggleLink = document.getElementById('toggle-link');
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('auth-form');
+        const toggleForm = document.getElementById('toggle-form');
+        const formTitle = document.getElementById('form-title');
+        const formSubtitle = document.getElementById('form-subtitle');
+        const submitBtn = document.getElementById('submit-btn');
+        const nameGroup = document.getElementById('name-group');
+        const messageDiv = document.getElementById('message');
+        const toggleLink = document.getElementById('toggle-link');
 
-            if (!form || !toggleForm || !formTitle || !submitBtn || !nameGroup || !messageDiv || !toggleLink) {
-                console.error('One or more elements not found:', {
-                    form, toggleForm, formTitle, submitBtn, nameGroup, messageDiv, toggleLink
-                });
+        if (!form || !toggleForm || !formTitle || !submitBtn || !nameGroup || !messageDiv || !toggleLink) {
+            console.error('One or more elements not found:', {
+                form, toggleForm, formTitle, submitBtn, nameGroup, messageDiv, toggleLink
+            });
+            return;
+        }
+
+        let isSignUp = false;
+
+        toggleForm.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUp = !isSignUp;
+            formTitle.textContent = isSignUp ? 'Create Account' : 'Welcome to BirdScope';
+            formSubtitle.textContent = isSignUp ? 'Join BirdScope today' : 'Discover and identify birds with our AI-powered platform';
+            submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+            submitBtn.type = 'submit';
+            submitBtn.classList.remove('link');
+            nameGroup.style.display = isSignUp ? 'block' : 'none';
+            document.getElementById('name').required = isSignUp;
+            toggleLink.textContent = isSignUp ? 'Already have an account? ' : 'Not registered? ';
+            toggleForm.textContent = isSignUp ? 'Sign In' : 'Sign Up';
+            messageDiv.textContent = '';
+            messageDiv.style.color = '#dc3545';
+            form.reset();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = isSignUp ? document.getElementById('name').value : null;
+
+            if (!email || !password) {
+                messageDiv.textContent = 'Please enter email and password';
+                return;
+            }
+            if (!/^\S+@\S+\.\S+$/.test(email)) {
+                messageDiv.textContent = 'Please enter a valid email address';
+                return;
+            }
+            if (isSignUp && !name) {
+                messageDiv.textContent = 'Please enter your name';
                 return;
             }
 
-            let isSignUp = false;
+            const url = isSignUp ? '/api/signup' : '/api/signin';
+            const body = isSignUp ? { email, password, name } : { email, password };
 
-            toggleForm.addEventListener('click', (e) => {
-                e.preventDefault();
-                isSignUp = !isSignUp;
-                formTitle.textContent = isSignUp ? 'Create Account' : 'Welcome to BirdScope';
-                formSubtitle.textContent = isSignUp ? 'Join BirdScope today' : 'Discover and identify birds with our AI-powered platform';
-                submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-                submitBtn.type = 'submit';
-                submitBtn.classList.remove('link');
-                nameGroup.style.display = isSignUp ? 'block' : 'none';
-                // Убираем required с name при Sign In
-                document.getElementById('name').required = isSignUp;
-                toggleLink.textContent = isSignUp ? 'Already have an account? ' : 'Not registered? ';
-                toggleForm.textContent = isSignUp ? 'Sign In' : 'Sign Up';
-                messageDiv.textContent = '';
-                messageDiv.style.color = '#dc3545';
-                form.reset();
-            });
+            console.log('Sending request to:', url, 'with body:', body);
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                });
 
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const name = isSignUp ? document.getElementById('name').value : null;
+                console.log('Response status:', response.status);
 
-                // Клиентская валидация
-                if (!email || !password) {
-                    messageDiv.textContent = 'Please enter email and password';
-                    return;
-                }
-                if (!/^\S+@\S+\.\S+$/.test(email)) {
-                    messageDiv.textContent = 'Please enter a valid email address';
-                    return;
-                }
-                if (isSignUp && !name) {
-                    messageDiv.textContent = 'Please enter your name';
-                    return;
-                }
+                const data = await response.json();
+                console.log('Response data:', data);
 
-                const url = isSignUp ? '/api/signup' : '/api/signin';
-                const body = isSignUp ? { email, password, name } : { email, password };
-
-                console.log('Sending request to:', url, 'with body:', body);
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body),
-                    });
-
-                    console.log('Response status:', response.status);
-
-                    const data = await response.json();
-                    console.log('Response data:', data);
-
-                    if (!response.ok) {
-                        messageDiv.textContent = data.error || 'An error occurred';
-                        submitBtn.type = 'submit';
-                        submitBtn.classList.remove('link');
-                        return;
-                    }
-
-                    messageDiv.textContent = data.message || 'Success!';
-                    messageDiv.style.color = '#28a745';
-
-                    if (data.access_token) {
-                        localStorage.setItem('access_token', data.access_token);
-                        alert('Logged in successfully! Token saved.');
-                        if (!isSignUp) {
-                            submitBtn.textContent = 'Go to Landing';
-                            submitBtn.type = 'button';
-                            submitBtn.classList.add('link');
-                            submitBtn.onclick = () => {
-                                console.log('Redirecting to /landing');
-                                window.location.href = '/landing';
-                            };
-                        }
-                    }
-
-                    form.reset();
-                } catch (error) {
-                    messageDiv.textContent = 'Network error or server issue';
-                    console.error('Error:', error);
+                if (!response.ok) {
+                    messageDiv.textContent = data.error || 'An error occurred';
                     submitBtn.type = 'submit';
                     submitBtn.classList.remove('link');
+                    return;
                 }
-            });
 
-            submitBtn.addEventListener('click', (e) => {
-                console.log('Button click triggered');
-                if (form.checkValidity()) {
-                    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-                } else {
-                    console.log('Form invalid, validation issues:', {
-                        email: document.getElementById('email').value,
-                        password: document.getElementById('password').value.length > 0,
-                        name: isSignUp ? document.getElementById('name').value : 'N/A'
-                    });
-                    messageDiv.textContent = 'Please fill all required fields correctly';
+                messageDiv.textContent = data.message || 'Success!';
+                messageDiv.style.color = '#28a745';
+
+                if (data.access_token) {
+                    localStorage.setItem('access_token', data.access_token);
+                    alert('Logged in successfully! Token saved.');
+                    if (!isSignUp) {
+                        submitBtn.textContent = 'Go to Landing';
+                        submitBtn.type = 'button';
+                        submitBtn.classList.add('link');
+                        submitBtn.onclick = () => {
+                            window.location.href = '/landing';
+                        };
+                    }
                 }
-            });
+
+                form.reset();
+            } catch (error) {
+                messageDiv.textContent = 'Network error or server issue';
+                console.error('Error:', error);
+                submitBtn.type = 'submit';
+                submitBtn.classList.remove('link');
+            }
+        });
+
+        submitBtn.addEventListener('click', (e) => {
+            console.log('Button click triggered');
+            if (form.checkValidity()) {
+                form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            } else {
+                console.log('Form invalid, validation issues:', {
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value.length > 0,
+                    name: isSignUp ? document.getElementById('name').value : 'N/A'
+                });
+                messageDiv.textContent = 'Please fill all required fields correctly';
+            }
+        });
+
+        // Обработчик перехода на /profile с токеном
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.getAttribute('href') === '/profile') {
+                e.preventDefault();
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    fetch('/profile', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Unauthorized');
+                        return response.text();
+                    })
+                    .then(html => {
+                        document.open();
+                        document.write(html);
+                        document.close();
+                    })
+                    .catch(err => {
+                        console.error('Profile fetch error:', err);
+                        window.location.href = '/auth';
+                    });
+                } else {
+                    window.location.href = '/auth';
+                }
+            }
         });
     </script>
 </body>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>What Bird</title>
+    <title>BirdScope Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
     <style>
@@ -234,7 +234,7 @@
                         <input class="input" type="email" id="email" name="email" placeholder="Enter your email" required />
                         <input class="input" type="password" id="password" name="password" placeholder="Enter your password" required />
                         <div class="form-group" id="name-group">
-                            <input class="input" type="text" id="name" name="name" placeholder="Enter your name" required />
+                            <input class="input" type="text" id="name" name="name" placeholder="Enter your name" />
                         </div>
                         <button class="button" type="submit" id="submit-btn">Sign In</button>
                         <div class="signin-link" id="toggle-link">
@@ -279,6 +279,8 @@
                 submitBtn.type = 'submit';
                 submitBtn.classList.remove('link');
                 nameGroup.style.display = isSignUp ? 'block' : 'none';
+                // Убираем required с name при Sign In
+                document.getElementById('name').required = isSignUp;
                 toggleLink.textContent = isSignUp ? 'Already have an account? ' : 'Not registered? ';
                 toggleForm.textContent = isSignUp ? 'Sign In' : 'Sign Up';
                 messageDiv.textContent = '';
@@ -288,11 +290,13 @@
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 const name = isSignUp ? document.getElementById('name').value : null;
 
+                // Клиентская валидация
                 if (!email || !password) {
                     messageDiv.textContent = 'Please enter email and password';
                     return;
@@ -301,9 +305,15 @@
                     messageDiv.textContent = 'Please enter a valid email address';
                     return;
                 }
+                if (isSignUp && !name) {
+                    messageDiv.textContent = 'Please enter your name';
+                    return;
+                }
 
                 const url = isSignUp ? '/api/signup' : '/api/signin';
                 const body = isSignUp ? { email, password, name } : { email, password };
+
+                console.log('Sending request to:', url, 'with body:', body);
 
                 try {
                     const response = await fetch(url, {
@@ -312,7 +322,10 @@
                         body: JSON.stringify(body),
                     });
 
+                    console.log('Response status:', response.status);
+
                     const data = await response.json();
+                    console.log('Response data:', data);
 
                     if (!response.ok) {
                         messageDiv.textContent = data.error || 'An error occurred';
@@ -332,6 +345,7 @@
                             submitBtn.type = 'button';
                             submitBtn.classList.add('link');
                             submitBtn.onclick = () => {
+                                console.log('Redirecting to /landing');
                                 window.location.href = '/landing';
                             };
                         }
@@ -340,15 +354,22 @@
                     form.reset();
                 } catch (error) {
                     messageDiv.textContent = 'Network error or server issue';
+                    console.error('Error:', error);
                     submitBtn.type = 'submit';
                     submitBtn.classList.remove('link');
                 }
             });
 
             submitBtn.addEventListener('click', (e) => {
+                console.log('Button click triggered');
                 if (form.checkValidity()) {
                     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
                 } else {
+                    console.log('Form invalid, validation issues:', {
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value.length > 0,
+                        name: isSignUp ? document.getElementById('name').value : 'N/A'
+                    });
                     messageDiv.textContent = 'Please fill all required fields correctly';
                 }
             });

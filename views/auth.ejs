@@ -250,8 +250,6 @@
         </div>
     </div>
 
-<!-- ... (остальной код auth.ejs до <script>) -->
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         console.log('DOM fully loaded, initializing auth script');
@@ -277,8 +275,8 @@
         toggleForm.addEventListener('click', (e) => {
             e.preventDefault();
             isSignUp = !isSignUp;
-            formTitle.textContent = isSignUp ? 'Create Account' : 'Welcome to BirdScope';
-            formSubtitle.textContent = isSignUp ? 'Join BirdScope today' : 'Discover and identify birds with our AI-powered platform';
+            formTitle.textContent = isSignUp ? 'Create Account' : 'Welcome to What Bird';
+            formSubtitle.textContent = isSignUp ? 'Join What Bird today' : 'Discover and identify birds with our AI-powered platform';
             submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
             submitBtn.type = 'submit';
             submitBtn.classList.remove('link');

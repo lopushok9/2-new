@@ -23,6 +23,9 @@
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.87.6",
     "react": "^18.2.0",
+    "tweetnacl": "^1.0.3",
+    "jsonwebtoken": "^9.0.2",
+    "buffer": "^6.0.3"б,
     "react-dom": "^18.2.0"
   },
   "devDependencies": {

@@ -5,6 +5,15 @@
     <title>What Bird Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+    
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- TweetNaCl for signature verification -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl-util/0.15.1/nacl-util.min.js"></script>
+    
     <style>
         body {
             margin: 0;
@@ -207,6 +216,11 @@
         #name-group {
             display: none;
         }
+        
+        /* Solana Auth Container */
+        #solana-auth-root {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -222,7 +236,7 @@
         </div>
         <div class="right-panel">
             <div class="content-center">
-                <form class="form-box" id="auth-form">
+                <div class="form-box">
                     <div class="header">
                         <div class="logo">🐦</div>
                         <div>
@@ -230,7 +244,9 @@
                             <p class="subtitle" id="form-subtitle">Discover and identify birds with our AI-powered platform</p>
                         </div>
                     </div>
-                    <div class="form">
+                    
+                    <!-- Existing Email/Password Form -->
+                    <form class="form" id="auth-form">
                         <input class="input" type="email" id="email" name="email" placeholder="Enter your email" required />
                         <input class="input" type="password" id="password" name="password" placeholder="Enter your password" required />
                         <div class="form-group" id="name-group">
@@ -240,9 +256,12 @@
                         <div class="signin-link" id="toggle-link">
                             Not registered? <a href="#" id="toggle-form">Sign Up</a>
                         </div>
-                    </div>
-                    <div id="message"></div>
-                </form>
+                        <div id="message"></div>
+                    </form>
+                    
+                    <!-- Solana Auth React Component Container -->
+                    <div id="solana-auth-root"></div>
+                </div>
             </div>
             <div class="footer">
                 What Bird
@@ -250,162 +269,173 @@
         </div>
     </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM fully loaded, initializing auth script');
+    <!-- Load bundled Solana Auth component -->
+    <script src="/js/solana-auth.bundle.js"></script>
+    <script>
+        // Mount React component after DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded, initializing auth script');
 
-        const form = document.getElementById('auth-form');
-        const toggleForm = document.getElementById('toggle-form');
-        const formTitle = document.getElementById('form-title');
-        const formSubtitle = document.getElementById('form-subtitle');
-        const submitBtn = document.getElementById('submit-btn');
-        const nameGroup = document.getElementById('name-group');
-        const messageDiv = document.getElementById('message');
-        const toggleLink = document.getElementById('toggle-link');
-
-        if (!form || !toggleForm || !formTitle || !submitBtn || !nameGroup || !messageDiv || !toggleLink) {
-            console.error('One or more elements not found:', {
-                form, toggleForm, formTitle, submitBtn, nameGroup, messageDiv, toggleLink
-            });
-            return;
-        }
-
-        let isSignUp = false;
-
-        toggleForm.addEventListener('click', (e) => {
-            e.preventDefault();
-            isSignUp = !isSignUp;
-            formTitle.textContent = isSignUp ? 'Create Account' : 'Welcome to What Bird';
-            formSubtitle.textContent = isSignUp ? 'Join What Bird today' : 'Discover and identify birds with our AI-powered platform';
-            submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
-            submitBtn.type = 'submit';
-            submitBtn.classList.remove('link');
-            nameGroup.style.display = isSignUp ? 'block' : 'none';
-            document.getElementById('name').required = isSignUp;
-            toggleLink.textContent = isSignUp ? 'Already have an account? ' : 'Not registered? ';
-            toggleForm.textContent = isSignUp ? 'Sign In' : 'Sign Up';
-            messageDiv.textContent = '';
-            messageDiv.style.color = '#dc3545';
-            form.reset();
-            console.log('Toggled to:', isSignUp ? 'Sign Up' : 'Sign In');
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const name = isSignUp ? document.getElementById('name').value : null;
-
-            if (!email || !password) {
-                messageDiv.textContent = 'Please enter email and password';
-                return;
-            }
-            if (!/^\S+@\S+\.\S+$/.test(email)) {
-                messageDiv.textContent = 'Please enter a valid email address';
-                return;
-            }
-            if (isSignUp && !name) {
-                messageDiv.textContent = 'Please enter your name';
-                return;
+            // Mount Solana Auth Component
+            const solanaAuthRoot = document.getElementById('solana-auth-root');
+            if (solanaAuthRoot && window.SolanaAuth) {
+                const root = ReactDOM.createRoot(solanaAuthRoot);
+                root.render(React.createElement(window.SolanaAuth.default));
             }
 
-            const url = isSignUp ? '/api/signup' : '/api/signin';
-            const body = isSignUp ? { email, password, name } : { email, password };
+            // Existing email/password auth logic (unchanged)
+            const form = document.getElementById('auth-form');
+            const toggleForm = document.getElementById('toggle-form');
+            const formTitle = document.getElementById('form-title');
+            const formSubtitle = document.getElementById('form-subtitle');
+            const submitBtn = document.getElementById('submit-btn');
+            const nameGroup = document.getElementById('name-group');
+            const messageDiv = document.getElementById('message');
+            const toggleLink = document.getElementById('toggle-link');
 
-            console.log('Sending request to:', url, 'with body:', body);
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body),
+            if (!form || !toggleForm || !formTitle || !submitBtn || !nameGroup || !messageDiv || !toggleLink) {
+                console.error('One or more elements not found:', {
+                    form, toggleForm, formTitle, submitBtn, nameGroup, messageDiv, toggleLink
                 });
+                return;
+            }
 
-                console.log('Response status:', response.status);
+            let isSignUp = false;
 
-                const data = await response.json();
-                console.log('Response data:', data);
+            toggleForm.addEventListener('click', (e) => {
+                e.preventDefault();
+                isSignUp = !isSignUp;
+                formTitle.textContent = isSignUp ? 'Create Account' : 'Welcome to What Bird';
+                formSubtitle.textContent = isSignUp ? 'Join What Bird today' : 'Discover and identify birds with our AI-powered platform';
+                submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+                submitBtn.type = 'submit';
+                submitBtn.classList.remove('link');
+                nameGroup.style.display = isSignUp ? 'block' : 'none';
+                document.getElementById('name').required = isSignUp;
+                toggleLink.textContent = isSignUp ? 'Already have an account? ' : 'Not registered? ';
+                toggleForm.textContent = isSignUp ? 'Sign In' : 'Sign Up';
+                messageDiv.textContent = '';
+                messageDiv.style.color = '#dc3545';
+                form.reset();
+                console.log('Toggled to:', isSignUp ? 'Sign Up' : 'Sign In');
+            });
 
-                if (!response.ok) {
-                    messageDiv.textContent = data.error || 'An error occurred';
-                    submitBtn.type = 'submit';
-                    submitBtn.classList.remove('link');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                console.log('Form submit triggered, mode:', isSignUp ? 'Sign Up' : 'Sign In');
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const name = isSignUp ? document.getElementById('name').value : null;
+
+                if (!email || !password) {
+                    messageDiv.textContent = 'Please enter email and password';
+                    return;
+                }
+                if (!/^\S+@\S+\.\S+$/.test(email)) {
+                    messageDiv.textContent = 'Please enter a valid email address';
+                    return;
+                }
+                if (isSignUp && !name) {
+                    messageDiv.textContent = 'Please enter your name';
                     return;
                 }
 
-                messageDiv.textContent = data.message || 'Success!';
-                messageDiv.style.color = '#28a745';
+                const url = isSignUp ? '/api/signup' : '/api/signin';
+                const body = isSignUp ? { email, password, name } : { email, password };
 
-                if (data.access_token) {
-                    localStorage.setItem('access_token', data.access_token);
-                    alert('Logged in successfully! Token saved.');
-                    if (!isSignUp) {
-                        submitBtn.textContent = 'Go to Landing';
-                        submitBtn.type = 'button';
-                        submitBtn.classList.add('link');
-                        submitBtn.onclick = () => {
-                            console.log('Redirecting to /landing');
-                            window.location.href = '/landing';
-                        };
+                console.log('Sending request to:', url, 'with body:', body);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    const data = await response.json();
+                    console.log('Response data:', data);
+
+                    if (!response.ok) {
+                        messageDiv.textContent = data.error || 'An error occurred';
+                        submitBtn.type = 'submit';
+                        submitBtn.classList.remove('link');
+                        return;
+                    }
+
+                    messageDiv.textContent = data.message || 'Success!';
+                    messageDiv.style.color = '#28a745';
+
+                    if (data.access_token) {
+                        localStorage.setItem('access_token', data.access_token);
+                        alert('Logged in successfully! Token saved.');
+                        if (!isSignUp) {
+                            submitBtn.textContent = 'Go to Landing';
+                            submitBtn.type = 'button';
+                            submitBtn.classList.add('link');
+                            submitBtn.onclick = () => {
+                                console.log('Redirecting to /landing');
+                                window.location.href = '/landing';
+                            };
+                        }
+                    }
+
+                    form.reset();
+                } catch (error) {
+                    messageDiv.textContent = 'Network error or server issue';
+                    console.error('Error:', error);
+                    submitBtn.type = 'submit';
+                    submitBtn.classList.remove('link');
+                }
+            });
+
+            submitBtn.addEventListener('click', (e) => {
+                console.log('Button click triggered');
+                if (form.checkValidity()) {
+                    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                } else {
+                    console.log('Form invalid, validation issues:', {
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value.length > 0,
+                        name: isSignUp ? document.getElementById('name').value : 'N/A'
+                    });
+                    messageDiv.textContent = 'Please fill all required fields correctly';
+                }
+            });
+
+            // Обработчик перехода на /profile с токеном
+            document.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && e.target.getAttribute('href') === '/profile') {
+                    e.preventDefault();
+                    const token = localStorage.getItem('access_token');
+                    if (token) {
+                        fetch('/profile', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Unauthorized');
+                            return response.text();
+                        })
+                        .then(html => {
+                            document.open();
+                            document.write(html);
+                            document.close();
+                        })
+                        .catch(err => {
+                            console.error('Profile fetch error:', err);
+                            window.location.href = '/auth';
+                        });
+                    } else {
+                        window.location.href = '/auth';
                     }
                 }
-
-                form.reset();
-            } catch (error) {
-                messageDiv.textContent = 'Network error or server issue';
-                console.error('Error:', error);
-                submitBtn.type = 'submit';
-                submitBtn.classList.remove('link');
-            }
+            });
         });
-
-        submitBtn.addEventListener('click', (e) => {
-            console.log('Button click triggered');
-            if (form.checkValidity()) {
-                form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-            } else {
-                console.log('Form invalid, validation issues:', {
-                    email: document.getElementById('email').value,
-                    password: document.getElementById('password').value.length > 0,
-                    name: isSignUp ? document.getElementById('name').value : 'N/A'
-                });
-                messageDiv.textContent = 'Please fill all required fields correctly';
-            }
-        });
-
-        // Обработчик перехода на /profile с токеном
-        document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.getAttribute('href') === '/profile') {
-                e.preventDefault();
-                const token = localStorage.getItem('access_token');
-                if (token) {
-                    fetch('/profile', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Unauthorized');
-                        return response.text();
-                    })
-                    .then(html => {
-                        document.open();
-                        document.write(html);
-                        document.close();
-                    })
-                    .catch(err => {
-                        console.error('Profile fetch error:', err);
-                        window.location.href = '/auth';
-                    });
-                } else {
-                    window.location.href = '/auth';
-                }
-            }
-        });
-    });
-</script>
+    </script>
 </body>
 </html>

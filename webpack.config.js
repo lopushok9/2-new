@@ -3,12 +3,13 @@ const path = require('path');
 module.exports = {
   entry: './src/SolanaAuth.jsx',
   output: {
-    filename: 'solana-auth.bundle.js',
-    path: path.resolve(__dirname, 'public/js'),
-    library: 'SolanaAuth',
-    libraryTarget: 'umd',
-    globalObject: 'this'
-  },
+  path: path.resolve(__dirname, 'public/dist'),
+  filename: '[name].bundle.js',
+  library: 'SolanaAuth',          // имя глобальной переменной
+  libraryTarget: 'umd',           // чтобы было доступно в браузере
+  globalObject: 'this',
+},
+
   module: {
     rules: [
       {

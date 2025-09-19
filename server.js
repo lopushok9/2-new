@@ -5,6 +5,8 @@ const cors = require('cors');
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 const cookieParser = require('cookie-parser'); // Добавляем для работы с cookies
+const { PublicKey } = require('@solana/web3.js');
+const nacl = require('tweetnacl');
 
 const app = express();
 
@@ -184,6 +186,135 @@ app.post('/api/signin', async (req, res) => {
     });
   } catch (err) {
     console.error('Signin error:', err);
+    res.status(500).json({ error: 'Internal server error', details: err.message });
+  }
+});
+
+// Новый endpoint для Solana аутентификации
+app.post('/api/solana-auth', async (req, res) => {
+  try {
+    const { publicKey, message, signature } = req.body;
+    
+    if (!publicKey || !message || !signature) {
+      return res.status(400).json({ error: 'Missing required fields: publicKey, message, signature' });
+    }
+
+    console.log('Solana auth attempt for public key:', publicKey);
+
+    // Verify signature
+    const messageBytes = new TextEncoder().encode(message);
+    const publicKeyBytes = new PublicKey(publicKey).toBytes();
+    const signatureBytes = new Uint8Array(signature);
+    
+    const isValidSignature = nacl.sign.detached.verify(
+      messageBytes,
+      signatureBytes,
+      publicKeyBytes
+    );
+
+    if (!isValidSignature) {
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    // Check if user exists with this Solana public key
+    let { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id, name, email, solana_public_key')
+      .eq('solana_public_key', publicKey)
+      .single();
+
+    let userId;
+    let userName;
+    let userEmail;
+
+    if (!profile) {
+      // Create new user with Solana wallet
+      const truncatedAddress = `${publicKey.slice(0, 6)}...${publicKey.slice(-4)}`;
+      const email = `${publicKey}@solana.wallet`; // Temporary email for wallet users
+      const name = `Solana User ${truncatedAddress}`;
+
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password: publicKey, // Use public key as password for wallet users
+        options: {
+          data: { 
+            name,
+            solana_public_key: publicKey,
+            auth_method: 'solana'
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Auth creation error:', authError);
+        return res.status(500).json({ error: 'Failed to create user account' });
+      }
+
+      // Create profile
+      const { error: newProfileError } = await supabase
+        .from('profiles')
+        .insert([{
+          user_id: authData.user.id,
+          name,
+          email,
+          solana_public_key: publicKey
+        }]);
+
+      if (newProfileError) {
+        console.error('Profile creation error:', newProfileError);
+        return res.status(500).json({ error: 'Failed to create user profile' });
+      }
+
+      userId = authData.user.id;
+      userName = name;
+      userEmail = email;
+    } else {
+      userId = profile.user_id;
+      userName = profile.name;
+      userEmail = profile.email;
+    }
+
+    // Generate session token (simplified approach using Supabase admin)
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: userEmail
+    });
+
+    if (sessionError) {
+      console.error('Session generation error:', sessionError);
+      return res.status(500).json({ error: 'Failed to generate session' });
+    }
+
+    // For simplicity, we'll create a temporary token
+    // In production, you should implement proper JWT token generation
+    const tempToken = Buffer.from(JSON.stringify({
+      userId,
+      publicKey,
+      timestamp: Date.now()
+    })).toString('base64');
+
+    // Set cookie
+    res.cookie('access_token', tempToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000, // 1 hour
+    });
+
+    res.status(200).json({
+      message: 'Solana authentication successful',
+      user: {
+        id: userId,
+        name: userName,
+        email: userEmail,
+        solana_public_key: publicKey
+      },
+      access_token: tempToken
+    });
+
+  } catch (err) {
+    console.error('Solana auth error:', err);
     res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 });

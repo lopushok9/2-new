@@ -1,15 +1,16 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/SolanaAuth.jsx',
+  entry: {
+    solanaAuth: './src/SolanaAuth.jsx', // твой React-компонент
+  },
   output: {
-  path: path.resolve(__dirname, 'public/dist'),
-  filename: '[name].bundle.js',
-  library: 'SolanaAuth',          // имя глобальной переменной
-  libraryTarget: 'umd',           // чтобы было доступно в браузере
-  globalObject: 'this',
-},
-
+    path: path.resolve(__dirname, 'public/dist'),
+    filename: '[name].bundle.js',
+    library: 'SolanaAuth',      // 👈 глобальная переменная: window.SolanaAuth
+    libraryTarget: 'umd',
+    globalObject: 'this',       // работает и в браузере, и в Node
+  },
   module: {
     rules: [
       {
@@ -18,21 +19,22 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env', '@babel/preset-react']
-          }
-        }
+            presets: [
+              '@babel/preset-env',
+              '@babel/preset-react'
+            ],
+          },
+        },
       },
       {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      }
-    ]
+        test: /\.css$/i, // для стилей из @solana/wallet-adapter-react-ui
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
   },
-  externals: {
-    'react': 'React',
-    'react-dom': 'ReactDOM'
-  }
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  devtool: 'source-map', // полезно для отладки
 };

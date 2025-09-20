@@ -8,7 +8,7 @@ module.exports = {
     path: path.resolve(__dirname, 'public/dist'),
     filename: '[name].bundle.js',
     library: 'SolanaAuth',      // 👈 глобальная переменная: window.SolanaAuth
-    libraryTarget: 'umd',
+    libraryTarget: 'var',
     globalObject: 'this',       // работает и в браузере, и в Node
   },
   module: {

@@ -270,7 +270,7 @@
     </div>
 
     <!-- Load bundled Solana Auth component -->
-    <script src="/dist/solanaAuth.bundle.js"></script>
+    <script src="/dist/solanaAuth.bundle.js" onload="console.log('SolanaAuth bundle loaded')" onerror="console.error('Failed to load SolanaAuth bundle')"></script>
     <script>
         // Mount React component after DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
@@ -278,9 +278,21 @@
 
             // Mount Solana Auth Component
             const solanaAuthRoot = document.getElementById('solana-auth-root');
+            console.log('SolanaAuthRoot element:', solanaAuthRoot);
+            console.log('window.SolanaAuth:', window.SolanaAuth);
+            console.log('window.React:', window.React);
+            console.log('window.ReactDOM:', window.ReactDOM);
+            
             if (solanaAuthRoot && window.SolanaAuth) {
+                console.log('Mounting SolanaAuth component...');
                 const root = ReactDOM.createRoot(solanaAuthRoot);
                 root.render(React.createElement(window.SolanaAuth.default));
+                console.log('SolanaAuth component mounted successfully');
+            } else {
+                console.error('Failed to mount SolanaAuth component:', {
+                    solanaAuthRoot: !!solanaAuthRoot,
+                    windowSolanaAuth: !!window.SolanaAuth
+                });
             }
 
             // Existing email/password auth logic (unchanged)

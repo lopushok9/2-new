@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -50,6 +51,66 @@ const authenticate = async (req, res, next) => {
 
   console.log('Authenticate middleware - Token from cookie:', tokenFromCookie); // Отладка
   console.log('Authenticate middleware - Token from header:', tokenFromHeader); // Отладка
+
+  if (!token) {
+    console.log('No token provided, redirecting to /auth');
+    return res.status(401).redirect('/auth');
+  }
+
+  try {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      console.log('Invalid token error:', error?.message);
+      return res.status(401).redirect('/auth');
+    }
+
+    console.log('User authenticated:', data.user.email);
+    req.user = data.user;
+    next();
+  } catch (err) {
+    console.error('Auth middleware error:', err);
+    res.status(500).redirect('/auth');
+  }
+};
+
+// Новый middleware для поддержки обоих типов аутентификации
+const authenticateFlexible = async (req, res, next) => {
+  // Проверяем Solana аутентификацию через cookies
+  const solanaPublicKey = req.cookies.solana_public_key;
+  const authMethod = req.cookies.auth_method;
+  
+  if (authMethod === 'solana' && solanaPublicKey) {
+    try {
+      // Для Solana аутентификации создаем пользователя на лету
+      const truncatedAddress = `${solanaPublicKey.slice(0, 6)}...${solanaPublicKey.slice(-4)}`;
+      const userName = `Solana User ${truncatedAddress}`;
+      const userEmail = `solana_${solanaPublicKey}@whatbird.app`;
+
+      // Создаем объект пользователя
+      req.user = {
+        id: solanaPublicKey,
+        email: userEmail,
+        user_metadata: {
+          name: userName,
+          solana_public_key: solanaPublicKey,
+          auth_method: 'solana'
+        }
+      };
+
+      console.log('Solana user authenticated:', userEmail);
+      next();
+      return;
+    } catch (err) {
+      console.error('Solana auth middleware error:', err);
+      return res.status(500).redirect('/auth');
+    }
+  }
+
+  // Если не Solana, проверяем обычную аутентификацию
+  const tokenFromCookie = req.cookies.access_token;
+  const authHeader = req.headers.authorization;
+  const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+  const token = tokenFromCookie || tokenFromHeader;
 
   if (!token) {
     console.log('No token provided, redirecting to /auth');
@@ -216,81 +277,22 @@ app.post('/api/solana-auth', async (req, res) => {
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
-    // Check if user exists with this Solana public key
-    let { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('user_id, name, email, solana_public_key')
-      .eq('solana_public_key', publicKey)
-      .single();
-
-    let userId;
-    let userName;
-    let userEmail;
-
-    if (!profile) {
-      // Create new user with Solana wallet
-      const truncatedAddress = `${publicKey.slice(0, 6)}...${publicKey.slice(-4)}`;
-      const email = `${publicKey}@solana.wallet`; // Temporary email for wallet users
-      const name = `Solana User ${truncatedAddress}`;
-
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password: publicKey, // Use public key as password for wallet users
-        options: {
-          data: { 
-            name,
-            solana_public_key: publicKey,
-            auth_method: 'solana'
-          }
-        }
-      });
-
-      if (authError) {
-        console.error('Auth creation error:', authError);
-        return res.status(500).json({ error: 'Failed to create user account' });
-      }
-
-      // Create profile
-      const { error: newProfileError } = await supabase
-        .from('profiles')
-        .insert([{
-          user_id: authData.user.id,
-          name,
-          email,
-          solana_public_key: publicKey
-        }]);
-
-      if (newProfileError) {
-        console.error('Profile creation error:', newProfileError);
-        return res.status(500).json({ error: 'Failed to create user profile' });
-      }
-
-      userId = authData.user.id;
-      userName = name;
-      userEmail = email;
-    } else {
-      userId = profile.user_id;
-      userName = profile.name;
-      userEmail = profile.email;
-    }
-
-    // Generate session token (simplified approach using Supabase admin)
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: userEmail
-    });
-
-    if (sessionError) {
-      console.error('Session generation error:', sessionError);
-      return res.status(500).json({ error: 'Failed to generate session' });
-    }
+    // Для Solana аутентификации нам не нужна база данных!
+    // Просто создаем пользователя на основе подписи кошелька
+    const truncatedAddress = `${publicKey.slice(0, 6)}...${publicKey.slice(-4)}`;
+    const userName = `Solana User ${truncatedAddress}`;
+    const userEmail = `solana_${publicKey}@whatbird.app`;
+    
+    console.log('Solana authentication successful for:', userName);
 
     // For simplicity, we'll create a temporary token
     // In production, you should implement proper JWT token generation
     const tempToken = Buffer.from(JSON.stringify({
-      userId,
+      userId: publicKey, // Используем public key как ID
       publicKey,
+      email: userEmail,
+      name: userName,
+      authMethod: 'solana',
       timestamp: Date.now()
     })).toString('base64');
 
@@ -305,7 +307,7 @@ app.post('/api/solana-auth', async (req, res) => {
     res.status(200).json({
       message: 'Solana authentication successful',
       user: {
-        id: userId,
+        id: publicKey,
         name: userName,
         email: userEmail,
         solana_public_key: publicKey
@@ -320,18 +322,38 @@ app.post('/api/solana-auth', async (req, res) => {
 });
 
 // Маршрут для профиля (защищенный)
-app.get('/profile', authenticate, async (req, res) => {
+app.get('/profile', authenticateFlexible, async (req, res) => {
   try {
     console.log('Fetching profile for user:', req.user.email);
+    
+    // Для Solana пользователей используем данные из токена
+    if (req.user.user_metadata?.auth_method === 'solana') {
+      res.render('profile', { 
+        user: {
+          name: req.user.user_metadata.name,
+          email: req.user.email,
+          solana_public_key: req.user.user_metadata.solana_public_key
+        },
+        solanaConnected: true,
+        authMethod: 'solana'
+      });
+      return;
+    }
+
+    // Для обычных пользователей ищем в базе данных
     const { data, error } = await supabase
       .from('profiles')
-      .select('name, email')
+      .select('name, email, solana_public_key, auth_method')
       .eq('user_id', req.user.id)
       .single();
 
     if (error) throw new Error(error.message);
 
-    res.render('profile', { user: data });
+    res.render('profile', { 
+      user: data,
+      solanaConnected: !!data.solana_public_key,
+      authMethod: data.auth_method || 'email'
+    });
   } catch (err) {
     console.error('Profile fetch error:', err);
     res.status(500).redirect('/auth');

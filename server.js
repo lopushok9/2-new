@@ -73,64 +73,51 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// Новый middleware для поддержки обоих типов аутентификации
+// Middleware для аутентификации, которое обрабатывает оба типа токенов
 const authenticateFlexible = async (req, res, next) => {
-  // Проверяем Solana аутентификацию через cookies
-  const solanaPublicKey = req.cookies.solana_public_key;
-  const authMethod = req.cookies.auth_method;
-  
-  if (authMethod === 'solana' && solanaPublicKey) {
-    try {
-      // Для Solana аутентификации создаем пользователя на лету
-      const truncatedAddress = `${solanaPublicKey.slice(0, 6)}...${solanaPublicKey.slice(-4)}`;
-      const userName = `Solana User ${truncatedAddress}`;
-      const userEmail = `solana_${solanaPublicKey}@whatbird.app`;
-
-      // Создаем объект пользователя
-      req.user = {
-        id: solanaPublicKey,
-        email: userEmail,
-        user_metadata: {
-          name: userName,
-          solana_public_key: solanaPublicKey,
-          auth_method: 'solana'
-        }
-      };
-
-      console.log('Solana user authenticated:', userEmail);
-      next();
-      return;
-    } catch (err) {
-      console.error('Solana auth middleware error:', err);
-      return res.status(500).redirect('/auth');
-    }
-  }
-
-  // Если не Solana, проверяем обычную аутентификацию
-  const tokenFromCookie = req.cookies.access_token;
-  const authHeader = req.headers.authorization;
-  const tokenFromHeader = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
-  const token = tokenFromCookie || tokenFromHeader;
+  const token = req.cookies.access_token;
 
   if (!token) {
-    console.log('No token provided, redirecting to /auth');
+    console.log('Auth-Flexible: No token found, redirecting to /auth');
     return res.status(401).redirect('/auth');
   }
 
+  // 1. Попытка верификации как Supabase JWT
   try {
     const { data, error } = await supabase.auth.getUser(token);
-    if (error || !data.user) {
-      console.log('Invalid token error:', error?.message);
-      return res.status(401).redirect('/auth');
+    if (!error && data.user) {
+      console.log('Auth-Flexible: Supabase user authenticated:', data.user.email);
+      req.user = data.user;
+      return next();
     }
-
-    console.log('User authenticated:', data.user.email);
-    req.user = data.user;
-    next();
-  } catch (err) {
-    console.error('Auth middleware error:', err);
-    res.status(500).redirect('/auth');
+  } catch (jwtError) {
+    console.log('Auth-Flexible: Not a valid Supabase token, proceeding to check for Solana.', jwtError.message);
   }
+
+  // 2. Если не получилось, попытка верификации как Solana токен
+  try {
+    const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+    if (decoded.authMethod === 'solana' && decoded.publicKey) {
+      console.log('Auth-Flexible: Solana user authenticated:', decoded.email);
+      req.user = {
+        id: decoded.publicKey,
+        email: decoded.email,
+        user_metadata: {
+          name: decoded.name,
+          solana_public_key: decoded.publicKey,
+          auth_method: 'solana'
+        }
+      };
+      return next();
+    }
+  } catch (solanaError) {
+     console.log('Auth-Flexible: Failed to decode as Solana token.', solanaError.message);
+  }
+
+  // 3. Если ни один из способов не сработал
+  console.log('Auth-Flexible: Token is invalid for both Supabase and Solana. Redirecting.');
+  res.clearCookie('access_token'); // Очищаем невалидный токен
+  return res.status(401).redirect('/auth');
 };
 
 // Маршруты

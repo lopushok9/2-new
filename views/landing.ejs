@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Bird</title>
+  <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="shortcut icon" href="/assets/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+      background-color: white;
+      min-height: 100vh;
+    }
+
+    .header {
+      background-color: #1a472a;
+      width: 100%;
+      padding: 20px 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      font-size: 18px;
+    }
+
+    .logo {
+      font-size: 35px;
+      font-weight: 600;
+      letter-spacing: 0.9px;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      letter-spacing: 0.7px;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 400;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      transition: opacity 0.3s ease;
+    }
+    .nav-links a:hover { opacity: 0.8; }
+
+    .main-content {
+      display: flex;
+      min-height: calc(100vh - 80px);
+      align-items: center;
+    }
+
+    .left-section {
+      flex: 1;
+      padding: 60px 40px 60px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .right-section {
+      flex: 1;
+      height: calc(100vh - 80px);
+      position: relative;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-title {
+      font-size: 4.5rem;
+      font-weight: 700;
+      color: #1a472a;
+      line-height: 1.1;
+      margin-bottom: 30px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 40px;
+      font-weight: 400;
+      max-width: 500px;
+    }
+
+    .cta-button {
+      background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: fit-content;
+      font-family: inherit;
+      box-shadow: 0 4px 15px rgba(26, 71, 42, 0.2);
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(26, 71, 42, 0.3);
+    }
+    .cta-button:active { transform: translateY(0); }
+
+.ca-text {
+      color: rgba(102, 102, 102, 0.3);
+      font-size: 0.9rem;
+      font-weight: 300;
+      margin-top: 40px;
+      letter-spacing: 0.5px;
+    }
+
+    /* --- STACK SLIDER --- */
+    .slider {
+      position: relative;
+      width: 80%;
+      height: 80%;
+      perspective: 1500px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      object-fit: cover;
+      object-position: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      transition: transform 0.9s cubic-bezier(.22,1,.36,1), opacity 0.9s ease, filter 0.9s ease;
+      will-change: transform, opacity, filter;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      transform: translateZ(0);
+    }
+
+    /* MOBILE: disable animation, show only first image */
+    @media (max-width: 768px) {
+      .main-content { flex-direction: column; min-height: auto; }
+      .left-section { padding: 40px 20px; text-align: center; }
+      .right-section {
+        height: auto;
+        min-height: auto;
+        margin-top: 20px;
+      }
+      .slider { width: 90%; height: auto; }
+      .slide {
+        position: static;
+        width: 100%;
+        height: auto;
+        transform: none !important;
+        filter: none !important;
+        opacity: 1 !important;
+        box-shadow: none;
+      }
+      .slide:not(:first-child) { display: none; }
+      .cta-button { margin: 0 auto; }
+      .hero-title { font-size: 2.5rem; }
+      .nav { flex-direction: column; gap: 15px; }
+      .nav-links { gap: 15px; }
+      .nav-links a { font-family: Arial, sans-serif; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <nav class="nav">
+        <div class="logo">What bird</div>
+        <div class="nav-links">
+          <a href="/">Get Started</a>
+          <a href="/about">About</a>
+          <a href="/roadmap">Roadmap</a>
+          <a href="/auth">Sing in</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="left-section">
+      <h1 class="hero-title">Explore the beauty of nature</h1>
+      <p class="hero-subtitle">
+        Brand new AI tool aims to make bird recognition fast, easy, and fun
+      </p>
+      <button class="cta-button" onclick="window.location.href='/'">Get Started</button>
+    </section>
+    
+    <section class="right-section">
+      <div class="slider">
+        <img src="/assets/puffins.jpg" class="slide" alt="slide1">
+        <img src="/assets/photo2.jpg" class="slide" alt="slide2">
+        <img src="/assets/photo3.jpg" class="slide" alt="slide3">
+        <img src="/assets/photo4.jpg" class="slide" alt="slide4">
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const slider = document.querySelector('.slider');
+    let slides = Array.from(document.querySelectorAll('.slide'));
+
+    const OFFSET_X = 30, OFFSET_Y = 30, SCALE_STEP = 0.06;
+    const ROT_Y_STEP = 2, ROT_X_STEP = 1, BLUR_STEP = 2, OPACITY_STEP = 0.08;
+
+    function applyStack() {
+      slides.forEach((s, i) => {
+        s.style.zIndex = slides.length - i;
+        if (i === 0) {
+          s.style.transform = "translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0)";
+          s.style.opacity = "1"; s.style.filter = "blur(0px)";
+        } else {
+          const tx = -OFFSET_X * i, ty = -OFFSET_Y * i;
+          const scale = 1 - i * SCALE_STEP, ry = -ROT_Y_STEP * i, rx = ROT_X_STEP * i;
+          const blur = BLUR_STEP * i, opacity = Math.max(0, 1 - i * OPACITY_STEP);
+          s.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+          s.style.opacity = opacity; s.style.filter = `blur(${blur}px)`;
+        }
+      });
+    }
+
+    window.addEventListener('load', () => { applyStack(); });
+
+    let isAnimating = false;
+    function rotateSlides() {
+      if (isAnimating) return; isAnimating = true;
+      slides = Array.from(document.querySelectorAll('.slide'));
+      const first = slides[0];
+      first.style.transform = "translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
+      first.style.opacity = "0"; first.style.filter = "blur(0px)";
+      setTimeout(() => {
+        slider.appendChild(first);
+        slides = Array.from(document.querySelectorAll('.slide'));
+        applyStack();
+        setTimeout(() => { isAnimating = false; }, 950);
+      }, 920);
+    }
+
+    if (window.innerWidth > 768) setInterval(rotateSlides, 3000);
+  </script>
+</body>
+</html>

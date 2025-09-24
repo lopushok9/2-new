@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Bird</title>
+  <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="shortcut icon" href="/assets/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <style>
+    body {
+      margin: 0;
+      overflow-y: auto;
+    }
+    .roadmap-container {
+      background: #fff;
+      font-family: 'Inter', Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 64px 24px;
+    }
+    .roadmap-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .roadmap-logo {
+      width: 48px;
+      height: 48px;
+      background: #1e293b;
+      color: #fff;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 24px;
+    }
+    .roadmap-header h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 16px;
+    }
+    .roadmap-header p {
+      color: #64748b;
+      font-size: 1.125rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .roadmap-timeline {
+      position: relative;
+    }
+    .roadmap-vertical-line {
+      position: absolute;
+      left: 32px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: #e2e8f0;
+      display: none;
+    }
+    @media (min-width: 640px) {
+      .roadmap-vertical-line {
+        display: block;
+      }
+    }
+    .roadmap-list {
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+    .roadmap-quarter {
+      display: flex;
+      align-items: flex-start;
+      gap: 32px;
+    }
+    .roadmap-quarter-info {
+      width: 128px;
+      flex-shrink: 0;
+      text-align: center;
+      position: relative;
+    }
+    .roadmap-dot {
+      position: absolute;
+      left: -12px;
+      top: 24px;
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border: 2px solid #cbd5e1;
+      border-radius: 50%;
+      display: none;
+    }
+    @media (min-width: 640px) {
+      .roadmap-dot {
+        display: block;
+      }
+    }
+    .roadmap-bird {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    .roadmap-quarter-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+    .roadmap-status {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 4px;
+    }
+    .roadmap-status.done {
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .roadmap-status.active {
+      background: #1e293b;
+      color: #fff;
+    }
+    .roadmap-status.planned {
+      background: #f8fafc;
+      color: #64748b;
+    }
+    .roadmap-content {
+      flex: 1;
+      min-width: 0;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      transition: border 0.2s;
+    }
+    .roadmap-content:hover {
+      border-color: #cbd5e1;
+    }
+    .roadmap-title {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 16px;
+    }
+    .roadmap-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .roadmap-content li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: #334155;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .roadmap-feature-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-top: 7px;
+      flex-shrink: 0;
+      background: #cbd5e1;
+    }
+    .roadmap-feature-dot.done {
+      background: #94a3b8;
+    }
+    .roadmap-feature-dot.active {
+      background: #cbd5e1;
+    }
+    .roadmap-footer {
+      text-align: center;
+      margin-top: 80px;
+      padding-top: 48px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .roadmap-footer > div {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 32px;
+      display: inline-block;
+    }
+    .roadmap-footer h3 {
+      font-size: 1.15rem;
+      font-weight: bold;
+      color: #1e293b;
+      margin-bottom: 12px;
+    }
+    .roadmap-footer p {
+      color: #64748b;
+      font-size: 1rem;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="roadmap-container">
+    <header class="roadmap-header">
+      <div class="roadmap-logo">🐦</div>
+      <h1>What Bird Roadmap</h1>
+      <p>Journey to build easiest bird identification platform</p>
+    </header>
+    <div class="roadmap-timeline">
+      <div class="roadmap-vertical-line"></div>
+      <div class="roadmap-list">
+        <div class="roadmap-quarter">
+          <div class="roadmap-quarter-info">
+            <div class="roadmap-dot"></div> 
+            <div class="roadmap-bird">🦜</div>
+            <div class="roadmap-quarter-title">Q3 2025</div>
+            <div class="roadmap-status active">In Progress</div>
+          </div>
+          <div class="roadmap-content">
+            <div class="roadmap-title">Basic Features</div>
+            <ul>
+              <li><span class="roadmap-feature-dot active"></span>Build fundamental architecture</li>
+              <li><span class="roadmap-feature-dot active"></span>Launch subscription model</li>
+              <li><span class="roadmap-feature-dot"></span>Create blog section with tips</li>
+              <li><span class="roadmap-feature-dot"></span>Token utility</li>
+            </ul>
+          </div>
+        </div>
+        <div class="roadmap-quarter">
+          <div class="roadmap-quarter-info">
+            <div class="roadmap-dot"></div>
+            <div class="roadmap-bird">🦉</div>
+            <div class="roadmap-quarter-title">Q4 2025</div>
+            <div class="roadmap-status planned">Planned</div>
+          </div>
+          <div class="roadmap-content">
+            <div class="roadmap-title">Advanced Features</div>
+            <ul>
+              <li><span class="roadmap-feature-dot"></span>Marketing via social media, forums</li>
+              <li><span class="roadmap-feature-dot"></span>Voice identification</li>
+              <li><span class="roadmap-feature-dot"></span>Improve identification mechanism</li>
+              <li><span class="roadmap-feature-dot"></span>Species map</li>
+            </ul>
+          </div>
+        </div>
+        <div class="roadmap-quarter">
+          <div class="roadmap-quarter-info">
+            <div class="roadmap-dot"></div>
+            <div class="roadmap-bird">🦢</div>
+            <div class="roadmap-quarter-title">Q1 2026</div>
+            <div class="roadmap-status planned">Planned</div>
+          </div>
+          <div class="roadmap-content">
+            <div class="roadmap-title">Community & Education</div>
+            <ul>
+              <li><span class="roadmap-feature-dot"></span>Implement social network</li>
+              <li><span class="roadmap-feature-dot"></span>Educational content</li>
+              <li><span class="roadmap-feature-dot"></span>Create community</li>
+              <li><span class="roadmap-feature-dot"></span>Partnerships with conservation groups</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="roadmap-footer">
+      <div>
+        <h3>Stay Updated</h3>
+        <p>Follow our progress and be the first to know about new features and improvements to What Bird.</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

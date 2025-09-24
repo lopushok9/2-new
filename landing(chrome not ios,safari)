@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Bird</title>
+    <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/assets/site.webmanifest" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+            background-color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background-color: #1a472a;
+            width: 100%;
+            padding: 20px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .logo {
+            font-size: 33px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            letter-spacing: 0.7px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 400;
+            font-family: "SF Pro Display";
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: calc(100vh - 80px);
+            align-items: center;
+        }
+
+        .left-section {
+            flex: 1;
+            padding: 60px 40px 60px 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .right-section {
+            flex: 1;
+            height: calc(100vh - 80px);
+            position: relative;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: #1a472a;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            font-weight: 400;
+            max-width: 500px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: fit-content;
+            font-family: inherit;
+            box-shadow: 0 4px 15px rgba(26, 71, 42, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(26, 71, 42, 0.3);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        /* --- СТИЛИ ДЛЯ СТОПКИ ФОТО (только размеры/визуал — позиционирование и анимация управляются JS) --- */
+        .slider {
+            position: relative;
+            width: 80%;
+            height: 80%;
+            perspective: 1500px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            object-fit: cover;
+            object-position: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            /* начальные переходы (будут переопределяться и в JS) */
+            transition: transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease;
+        }
+
+        /* Небольшие начальные позиции для случаев, если JS не запустился: */
+        .slide:nth-child(1) { transform: translateX(0) translateY(0) scale(1) rotateY(0) rotateX(0); z-index: 5; filter: blur(0); opacity: 1; }
+        .slide:nth-child(2) { transform: translateX(-30px) translateY(-30px) scale(0.94) rotateY(-4deg) rotateX(3deg); z-index: 4; opacity: 0.9; filter: blur(2px); }
+        .slide:nth-child(3) { transform: translateX(-60px) translateY(-60px) scale(0.88) rotateY(-6deg) rotateX(4deg); z-index: 3; opacity: 0.8; filter: blur(4px); }
+        .slide:nth-child(4) { transform: translateX(-90px) translateY(-90px) scale(0.82) rotateY(-8deg) rotateX(5deg); z-index: 2; opacity: 0.7; filter: blur(6px); }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                min-height: auto;
+            }
+
+            .left-section {
+                padding: 40px 20px;
+                text-align: center;
+            }
+
+            .right-section {
+                height: 50vh;
+                min-height: 400px;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+                max-width: none;
+            }
+
+            .nav-links {
+                gap: 20px;
+            }
+
+            .nav-links a {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .left-section {
+                padding: 30px 15px;
+            }
+
+            .nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">What bird</div>
+                <div class="nav-links">
+                    <a href="/">Chat</a>
+                    <a href="/about">About</a>
+                    <a href="/landing">Landing</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="left-section">
+            <h1 class="hero-title">Explore the beauty of nature</h1>
+            <p class="hero-subtitle">
+                Brand new AI tool aims to make bird recognition fast, easy, and fun
+            </p>
+            <button class="cta-button" onclick="window.location.href='/'">Start Exploring</button>
+        </section>
+        
+        <section class="right-section">
+            <!-- СТОПКА ФОТО -->
+            <div class="slider">
+                <img src="/assets/puffins.jpg" class="slide" alt="slide1">
+                <img src="/assets/photo2.jpg" class="slide" alt="slide2">
+                <img src="/assets/photo3.jpg" class="slide" alt="slide3">
+                <img src="/assets/photo4.jpg" class="slide" alt="slide4">
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Анимация текста и кнопки (не трогал)
+        window.addEventListener('load', function() {
+            const title = document.querySelector('.hero-title');
+            const subtitle = document.querySelector('.hero-subtitle');
+            const button = document.querySelector('.cta-button');
+            
+            title.style.opacity = '0';
+            title.style.transform = 'translateY(30px)';
+            subtitle.style.opacity = '0';
+            subtitle.style.transform = 'translateY(30px)';
+            button.style.opacity = '0';
+            button.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                title.style.transition = 'all 0.8s ease';
+                title.style.opacity = '1';
+                title.style.transform = 'translateY(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                subtitle.style.transition = 'all 0.8s ease';
+                subtitle.style.opacity = '1';
+                subtitle.style.transform = 'translateY(0)';
+            }, 300);
+            
+            setTimeout(() => {
+                button.style.transition = 'all 0.8s ease';
+                button.style.opacity = '1';
+                button.style.transform = 'translateY(0)';
+            }, 500);
+        });
+
+        // -------------- АНИМАЦИЯ СТОПКИ (гладкая) ----------------
+        const slider = document.querySelector('.slider');
+        let slides = Array.from(document.querySelectorAll('.slide'));
+
+        // Параметры смещения (можно подправить)
+        const OFFSET_X = 30; // px на слой
+        const OFFSET_Y = 30; // px на слой
+        const SCALE_STEP = 0.06; // масштаб на слой
+        const ROT_Y_STEP = 2; // градусы rotateY на слой
+        const ROT_X_STEP = 1; // градусы rotateX на слой
+        const BLUR_STEP = 2; // px blur на слой
+        const OPACITY_STEP = 0.08; // прозрачность на слой
+        const TRANSITION = 'transform 900ms cubic-bezier(.22,1,.36,1), opacity 900ms ease, filter 900ms ease';
+
+        // Устанавливаем позиции стопки (анимируемые)
+        function applyStack() {
+            slides.forEach((s, i) => {
+                s.style.transition = TRANSITION;
+                s.style.zIndex = slides.length - i;
+                if (i === 0) {
+                    s.style.transform = "translateX(0px) translateY(0px) scale(1) rotateY(0deg) rotateX(0deg)";
+                    s.style.opacity = "1";
+                    s.style.filter = "blur(0px)";
+                } else {
+                    const tx = -OFFSET_X * i;
+                    const ty = -OFFSET_Y * i;
+                    const scale = 1 - i * SCALE_STEP;
+                    const ry = -ROT_Y_STEP * i;
+                    const rx = ROT_X_STEP * i;
+                    const blur = BLUR_STEP * i;
+                    const opacity = Math.max(0, 1 - i * OPACITY_STEP);
+                    s.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+                    s.style.opacity = `${opacity}`;
+                    s.style.filter = `blur(${blur}px)`;
+                }
+            });
+        }
+
+        // Запускаем начальную установку после небольшой задержки, чтобы CSS успел примениться
+        window.addEventListener('load', () => {
+            slides = Array.from(document.querySelectorAll('.slide'));
+            // задаём стартовые стили без рывка
+            slides.forEach(s => {
+                s.style.transition = 'none';
+            });
+            // принудительный рендер
+            void slider.offsetWidth;
+            applyStack();
+        });
+
+        let isAnimating = false;
+
+        function rotateSlides() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // обновим ссылку (вдруг DOM изменился)
+            slides = Array.from(document.querySelectorAll('.slide'));
+            const first = slides[0];
+            if (!first) { isAnimating = false; return; }
+
+            // 1) Верхний слайд "выдвигается" вперёд и плавно исчезает
+            first.style.transition = TRANSITION;
+            // идёт вперёд по Z (визуально "вперед") и немного в сторону — затем исчезает
+            first.style.transform = "translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
+            first.style.opacity = "0";
+            first.style.filter = "blur(0px)";
+
+            // 2) Через время, когда анимация ухода завершена, перемещаем элемент в конец,
+            //    ставим его в заднюю позицию с opacity 0 и затем даём плавное проявление
+            const ANIM_OUT_MS = 920; // чуть больше, чем transition
+            setTimeout(() => {
+                // Переместим в конец DOM
+                slider.appendChild(first);
+
+                // Обновим массив ссылок
+                slides = Array.from(document.querySelectorAll('.slide'));
+
+                // Получаем последний (только что перемещённый)
+                const last = slides[slides.length - 1];
+
+                // Сбросим transition чтобы не было резкого смещения
+                last.style.transition = 'none';
+
+                // Установим начальное состояние "сзади" и невидимое (opacity 0)
+                const i = slides.length - 1;
+                const tx = -OFFSET_X * i;
+                const ty = -OFFSET_Y * i;
+                const scale = 1 - i * SCALE_STEP;
+                const ry = -ROT_Y_STEP * i;
+                const rx = ROT_X_STEP * i;
+                const blur = BLUR_STEP * i;
+                // начальное (невидимое) положение за экраном (opacity 0)
+                last.style.transform = `translateX(${tx}px) translateY(${ty}px) scale(${scale}) rotateY(${ry}deg) rotateX(${rx}deg)`;
+                last.style.opacity = '0';
+                last.style.filter = `blur(${blur}px)`;
+
+                // форсируем reflow чтобы переходы применились корректно при включении transition
+                void last.offsetWidth;
+
+                // Плавно покажем вновь появившийся элемент и перестроим стопку
+                applyStack();
+
+                // после полного завершения анимаций снимаем флаг
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 950);
+            }, ANIM_OUT_MS);
+        }
+
+        // Запуск автопрокрутки
+        const INTERVAL = 3000;
+        let auto = setInterval(rotateSlides, INTERVAL);
+
+        // Опционально: при наведении можно остановить (не обязательно, не просили, но часто удобно)
+        // Если не нужно — строки ниже можно удалить. Я оставил неактивными (закомментированы).
+        /*
+        slider.addEventListener('mouseenter', () => clearInterval(auto));
+        slider.addEventListener('mouseleave', () => auto = setInterval(rotateSlides, INTERVAL));
+        */
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - What bird</title>
+    <!-- Подключаем современный шрифт Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #ffffff;
+            color: #4a4a4a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            font-weight: 400;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 40px;
+            transition: color 0.3s ease;
+            padding: 8px 0;
+            align-self: flex-start;
+        }
+
+        .back-link:hover {
+            color: #047857;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            justify-content: flex-start; 
+            align-items: flex-start;     
+            min-height: 300px;
+            width: 100%;
+            margin-bottom: 500px; /* фиксируем отступ снизу */
+        }
+
+        .content-text {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #4a4a4a;
+            max-width: 700px;
+            padding: 20px;
+            box-sizing: border-box;
+            font-weight: 400;
+            text-align: left; /* выравниваем по левому краю */
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        .placeholder-text {
+            font-style: normal;
+            font-size: 1.1rem;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 16px;
+            }
+            
+            .content-area {
+                margin-bottom: 200px; /* меньше отступа на телефоне */
+            }
+
+            .content-text {
+                padding: 16px;
+                font-size: 1rem;
+            }
+            
+            .placeholder-text {
+                font-size: 1rem;
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .content-area {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <a href="/" class="back-link">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m12 19-7-7 7-7"/>
+                <path d="M19 12H5"/>
+            </svg>
+            Back to Home
+        </a>
+
+        <div class="content-area">
+            <div class="content-text">
+                <p class="placeholder-text">
+                    "What Bird" is an AI-based bird identifier, offering a simple and fast tool to identify any bird species (and more). Just upload a photo, provide context, and receive an answer (not 100% accurate!). Built by Yuri Tsygankov. If you have questions, ideas, or issues, feel free to contact me via <a href="mailto:y.g.tsygankov@gmail.com">email</a> or <a href="https://x.com/lopushok09">social media</a>. Hope you love it! <br> CA:APYyKMJstRbZUA2jK5E5nFx2FDUEFtYuzWN2K96cmBLV
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

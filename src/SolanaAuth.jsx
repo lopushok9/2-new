@@ -202,4 +202,8 @@ export default function SolanaAuth() {
             </WalletProvider>
         </ConnectionProvider>
     );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 0b0187ea1aaa11fbf08f0e18fdc26cfa4f7a51d4

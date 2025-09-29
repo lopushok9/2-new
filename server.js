@@ -140,11 +140,32 @@ app.post('/', upload.single('image'), async (req, res) => {
   try {
     const message = req.body.message;
     const imageFile = req.file;
+    const systemPrompt = `You are an expert in bird species identification. Based on photo(s), audio, and/or metadata, return the result in JSON + 1–2 user-friendly sentences.  
+
+JSON format:  
+{
+  "species_common_name": "...",
+  "species_scientific_name": "...",
+  "taxon": {"family":"...","genus":"..."},
+  "confidence": 0.00-1.00,
+  "confidence_level": "high|medium|low",
+  "similar_species": [{"common_name":"...","scientific_name":"..."}],
+  "key_features": ["..."],
+  "uncertainty_reasons": ["..."],
+  "recommended_actions": ["..."]
+}
+
+Rules:  
+- If confidence <0.6, provide up to 3 candidate species.  
+- Justify the identification with short factual features (e.g., bill shape, plumage pattern).  
+- If the data is insufficient, explicitly say what is needed (extra photos, sound, behavior, etc.).  
+- Never invent facts.`;
 
     let requestBody = imageFile
       ? {
           model: "meta-llama/llama-4-maverick:free",
           messages: [
+            { role: "system", content: systemPrompt },
             {
               role: "user",
               content: [
@@ -156,7 +177,10 @@ app.post('/', upload.single('image'), async (req, res) => {
         }
       : {
           model: "meta-llama/llama-4-scout:free",
-          messages: [{ role: "user", content: message }]
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message }
+          ]
         };
 
     if (!imageFile && !message) return res.status(400).json({ error: 'No image or message provided' });

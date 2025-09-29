@@ -140,25 +140,14 @@ app.post('/', upload.single('image'), async (req, res) => {
   try {
     const message = req.body.message;
     const imageFile = req.file;
-    const systemPrompt = `You are an expert in bird species identification. Based on photo(s), audio, and/or metadata, return the result in JSON + 1–2 user-friendly sentences.  
-JSON format:  
-{
-  "species_common_name": "...",
-  "species_scientific_name": "...",
-  "taxon": {"family":"...","genus":"..."},
-  "confidence": 0.00-1.00,
-  "confidence_level": "high|medium|low",
-  "similar_species": [{"common_name":"...","scientific_name":"..."}],
-  "key_features": ["..."],
-  "uncertainty_reasons": ["..."],
-  "recommended_actions": ["..."]
-}
+    const systemPrompt = `You are a bird identification expert. Based on a photo, sound, or location/date information, describe the bird in **plain, easy-to-understand language**.  
 
-Rules:  
-- If confidence <0.6, provide up to 3 candidate species.  
-- Justify the identification with short factual features (e.g., bill shape, plumage pattern).  
-- If the data is insufficient, explicitly say what is needed (extra photos, sound, behavior, etc.).  
-- Never invent facts.`;
+Include:
+- The most likely species (common name, and optionally scientific name)  
+- Key visible features (color, shape, size, distinctive marks)  
+- Confidence level (high, medium, low)  
+
+If you are unsure, mention up to 2–3 possible species and suggest what additional photos or observations could help identify it.`;
 
     let requestBody = imageFile
       ? {

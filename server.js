@@ -141,7 +141,6 @@ app.post('/', upload.single('image'), async (req, res) => {
     const message = req.body.message;
     const imageFile = req.file;
     const systemPrompt = `You are an expert in bird species identification. Based on photo(s), audio, and/or metadata, return the result in JSON + 1–2 user-friendly sentences.  
-
 JSON format:  
 {
   "species_common_name": "...",

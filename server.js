@@ -15,7 +15,7 @@ const app = express();
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = ['https://whatbirdai.com'];
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || (origin && origin.startsWith('http://localhost'))) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -135,6 +135,7 @@ app.get('/about', (req, res) => res.render('about'));
 app.get('/landing', (req, res) => res.render('landing'));
 app.get('/roadmap', (req, res) => res.render('roadmap'));
 app.get('/auth', (req, res) => res.render('auth'));
+app.get('/newland', (req, res) => res.render('newland'));
 
 app.post('/', upload.single('image'), async (req, res) => {
   try {
@@ -365,6 +366,67 @@ app.get('/profile', authenticateFlexible, async (req, res) => {
   } catch (err) {
     console.error('Profile fetch error:', err);
     res.status(500).redirect('/auth');
+  }
+});
+
+// Endpoint for newland.tsx component
+app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
+  try {
+    const message = req.body.message;
+    const imageFile = req.file;
+    const systemPrompt = `You are a bird identification expert. Based on a photo, sound, or location/date information, describe the bird in **plain, easy-to-understand language**.  
+
+Include:
+- The most likely species (common name, and optionally scientific name)  
+- Key visible features (color, shape, size, distinctive marks)  
+- Confidence level (high, medium, low)  
+
+If you are unsure, mention up to 2–3 possible species and suggest what additional photos or observations could help identify it.`;
+
+    let requestBody = imageFile
+      ? {
+          model: "meta-llama/llama-4-maverick:free",
+          messages: [
+            { role: "system", content: systemPrompt },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: message || "What is in this image?" },
+                { type: "image_url", image_url: { url: `data:${imageFile.mimetype};base64,${imageFile.buffer.toString('base64')}` } }
+              ]
+            }
+          ]
+        }
+      : {
+          model: "meta-llama/llama-4-scout:free",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message }
+          ]
+        };
+
+    if (!imageFile && !message) return res.status(400).json({ error: 'No image or message provided' });
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('OpenRouter API error:', errorData);
+      return res.status(response.status).json({ error: 'Error from OpenRouter API', details: errorData });
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error in POST /api/newland-chat:', error);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 });
 

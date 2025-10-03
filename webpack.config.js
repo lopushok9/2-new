@@ -2,24 +2,23 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    solanaAuth: './src/SolanaAuth.jsx',
+    SolanaAuth: './src/SolanaAuth.jsx',
+    newland: './src/newland.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'public/dist'),
     filename: '[name].bundle.js',
-    library: 'SolanaAuth',
-    libraryTarget: 'var',   // прямое объявление var SolanaAuth = ...
+    library: '[name]',
+    libraryTarget: 'umd',
+    globalObject: 'this',
   },
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.(js|jsx|ts|tsx)$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-          },
         },
       },
       {
@@ -35,7 +34,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     fallback: {
       "crypto": require.resolve("crypto-browserify"),
       "stream": require.resolve("stream-browserify"),

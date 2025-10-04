@@ -160,7 +160,7 @@ export const SearchBar: React.FC<{
   return (
     <div className="mx-auto w-full max-w-3xl">
       <div className="relative overflow-hidden rounded-full border border-border bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div className="flex items-center gap-2 px-4">
+        <div className="flex items-center gap-2 px-2 sm:px-4">
           <label
             className={
               'relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center ' +
@@ -209,7 +209,7 @@ export const SearchBar: React.FC<{
           <img
             src={previewUrl}
             alt={file.name}
-            className="h-40 w-auto rounded-lg object-cover shadow-md"
+            className="h-24 sm:h-40 w-auto rounded-lg object-cover shadow-md"
           />
           <button
             onClick={removeFile}
@@ -330,14 +330,15 @@ export const ChatMainPage: React.FC = () => {
       >
         <div className="flex items-center gap-2">
           <SidebarMenuButton active={open} onClick={() => setOpen(true)} />
-          <a href="/landing" className="ml-1 text-[1.5rem] font-medium text-foreground/70 no-underline">
+          <a href="/landing" className="ml-1 text-xl sm:text-2xl font-medium text-foreground/70 no-underline">
             What bird
           </a>
         </div>
       </header>
       <main className="flex-1 flex flex-col">
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-4 pb-[14.3rem]">
+          <div className="flex-1 flex flex-col items-center justify-center p-2 pb-[14.3rem] sm:p-4">
+            <div className="flex-grow" style={{ flexGrow: 0.5 }} />
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -354,10 +355,11 @@ export const ChatMainPage: React.FC = () => {
             >
               <SearchBar onSubmit={handleSearchSubmit} />
             </motion.div>
+            <div className="flex-grow" />
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4">
               <div className="max-w-3xl mx-auto">
                 {messages.map(msg => (
                   <div
@@ -379,7 +381,7 @@ export const ChatMainPage: React.FC = () => {
                         <img
                           src={msg.imageUrl}
                           alt="user upload"
-                          className="h-40 w-auto rounded-lg object-cover mb-2"
+                          className="h-24 sm:h-40 w-auto rounded-lg object-cover mb-2"
                         />
                       )}
                       <ReactMarkdown>{msg.text}</ReactMarkdown>
@@ -395,7 +397,7 @@ export const ChatMainPage: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="p-4">
+            <div className="p-2 sm:p-4">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

@@ -337,7 +337,7 @@ export const ChatMainPage: React.FC = () => {
       </header>
       <main className="flex-1 flex flex-col">
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-4">
+          <div className="flex-1 flex flex-col items-center justify-center p-4 pb-[14.3rem]">
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}

@@ -130,12 +130,12 @@ const authenticateFlexible = async (req, res, next) => {
 };
 
 // Маршруты
-app.get('/', (req, res) => res.render('index', { historyItems: [] }));
+app.get('/', (req, res) => res.render('newland'));
 app.get('/about', (req, res) => res.render('about'));
 app.get('/landing', (req, res) => res.render('landing'));
 app.get('/roadmap', (req, res) => res.render('roadmap'));
 app.get('/auth', (req, res) => res.render('auth'));
-app.get('/newland', (req, res) => res.render('newland'));
+
 
 app.post('/', upload.single('image'), async (req, res) => {
   try {

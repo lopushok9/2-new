@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="Fast, easy and fun bird identification tool">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Fast, easy and fun bird identification tool">
   <meta name="google-site-verification" content="aMTAvmfDUV2gBH1dgzO9tbPcC4REdEsLZFuREWFjr9U" />
   <title>What Bird</title>
   <link rel="icon" type="image/png" href="/assets/favicon-96x96.png" sizes="96x96" />
@@ -164,24 +165,17 @@
 
     /* MOBILE: disable animation, show only first image */
     @media (max-width: 768px) {
-      .main-content { flex-direction: column; min-height: auto; }
+      .main-content { display: block; min-height: auto; }
       .left-section { padding: 40px 20px; text-align: center; }
       .right-section {
-        height: auto;
-        min-height: auto;
+        height: 400px;
         margin-top: 20px;
       }
-      .slider { width: 90%; height: auto; }
-      .slide {
-        position: static;
-        width: 100%;
-        height: auto;
-        transform: none !important;
-        filter: none !important;
-        opacity: 1 !important;
-        box-shadow: none;
+      .slider {
+        width: 90%;
+        height: 300px;
+        margin: 0 auto; /* center the slider */
       }
-      .slide:not(:first-child) { display: none; }
       .cta-button { margin: 0 auto; }
       .hero-title { font-size: 2.5rem; }
       .nav { flex-direction: column; gap: 15px; }
@@ -227,11 +221,20 @@
   <script>
     const slider = document.querySelector('.slider');
     let slides = Array.from(document.querySelectorAll('.slide'));
+    console.log('Slides found:', slides.length);
 
-    const OFFSET_X = 30, OFFSET_Y = 30, SCALE_STEP = 0.06;
-    const ROT_Y_STEP = 2, ROT_X_STEP = 1, BLUR_STEP = 2, OPACITY_STEP = 0.08;
+    const isMobile = window.innerWidth <= 768;
+
+    const OFFSET_X = isMobile ? 15 : 30;
+    const OFFSET_Y = isMobile ? 15 : 30;
+    const SCALE_STEP = 0.06;
+    const ROT_Y_STEP = isMobile ? 1 : 2;
+    const ROT_X_STEP = isMobile ? 0.5 : 1;
+    const BLUR_STEP = 2;
+    const OPACITY_STEP = 0.1;
 
     function applyStack() {
+      console.log('Applying stack');
       slides.forEach((s, i) => {
         s.style.zIndex = slides.length - i;
         if (i === 0) {
@@ -247,13 +250,21 @@
       });
     }
 
-    window.addEventListener('load', () => { applyStack(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('DOMContentLoaded event fired');
+      applyStack();
+    });
 
     let isAnimating = false;
     function rotateSlides() {
+      console.log('Rotating slides');
       if (isAnimating) return; isAnimating = true;
       slides = Array.from(document.querySelectorAll('.slide'));
       const first = slides[0];
+      if (!first) { // Guard against no slides
+          isAnimating = false;
+          return;
+      }
       first.style.transform = "translateZ(120px) translateX(20px) translateY(-20px) scale(1.06) rotateY(8deg) rotateX(-4deg)";
       first.style.opacity = "0"; first.style.filter = "blur(0px)";
       setTimeout(() => {
@@ -264,7 +275,7 @@
       }, 920);
     }
 
-    if (window.innerWidth > 768) setInterval(rotateSlides, 3000);
+    setInterval(rotateSlides, 3000);
   </script>
 </body>
 </html>

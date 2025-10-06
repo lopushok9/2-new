@@ -35,9 +35,9 @@ export const SidebarMenuButton: React.FC<{
       {/* Совмещённая полоса — строго по центру */}
       <motion.line
         x1="40"
-        y1="16"
+        y1="8"
         x2="40"
-        y2="84"
+        y2="92"
         stroke="currentColor"
         strokeWidth="6"
         strokeLinecap="round"

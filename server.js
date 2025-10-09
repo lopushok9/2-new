@@ -7,6 +7,7 @@ const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 const cookieParser = require('cookie-parser'); // Добавляем для работы с cookies
 const { PublicKey } = require('@solana/web3.js');
+const axios = require('axios');
 const nacl = require('tweetnacl');
 
 const app = express();
@@ -35,10 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Multer для обработки файлов
 const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
-});
+const upload = multer({ storage: storage });
 
 // Инициализация Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -369,64 +367,117 @@ app.get('/profile', authenticateFlexible, async (req, res) => {
   }
 });
 
+const FormData = require('form-data');
+
 // Endpoint for newland.tsx component
 app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
+  const imageFile = req.file;
+  const userMessage = req.body.message;
+  // Parse the history sent from the frontend
+  const history = req.body.history ? JSON.parse(req.body.history) : [];
+
+  // Map frontend history to the format expected by the LLM API
+  const llmHistory = history.map(msg => ({
+    role: msg.sender === 'user' ? 'user' : 'assistant',
+    content: msg.text
+  }));
+
   try {
-    const message = req.body.message;
-    const imageFile = req.file;
-    const systemPrompt = `You are a bird identification expert. Based on a photo, sound, or location/date information, describe the bird in **plain, easy-to-understand language**.  
+    if (imageFile) {
+      // --- SCENARIO 1: Image is present (iNaturalist + OpenRouter) ---
+      
+      // Step 1: Call iNaturalist
+      const apiToken = process.env.INATURALIST_API_TOKEN;
+      if (!apiToken) throw new Error('INATURALIST_API_TOKEN is not configured');
 
-Include:
-- The most likely species (common name, and optionally scientific name)  
-- Key visible features (color, shape, size, distinctive marks)  
-- Confidence level (high, medium, low)  
+      const form = new FormData();
+      form.append('image', imageFile.buffer, { filename: imageFile.originalname });
 
-If you are unsure, mention up to 2–3 possible species and suggest what additional photos or observations could help identify it.`;
+      const response = await axios.post("https://api.inaturalist.org/v1/computervision/score_image", form, {
+        headers: { 'Authorization': apiToken, ...form.getHeaders() },
+      });
 
-    let requestBody = imageFile
-      ? {
-          model: "meta-llama/llama-4-maverick:free",
-          messages: [
-            { role: "system", content: systemPrompt },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: message || "What is in this image?" },
-                { type: "image_url", image_url: { url: `data:${imageFile.mimetype};base64,${imageFile.buffer.toString('base64')}` } }
-              ]
-            }
-          ]
+      const data = response.data;
+      const topResult = data.results?.[0];
+
+      if (!topResult) {
+        formattedContent = "Could not identify the bird from the image. Please try another photo.";
+      } else {
+        const taxon = topResult.taxon;
+        const commonName = taxon.english_common_name || taxon.name;
+        const latinName = taxon.name;
+        const confidence = topResult.score ? (topResult.score * 100).toFixed(2) : null;
+        const wikiUrl = taxon.wikipedia_url;
+        const taxonImage = taxon.default_photo?.medium_url;
+
+        formattedContent = `### ${commonName}\n`;
+        formattedContent += `**Scientific Name:** *${latinName}*\n`;
+        if (confidence) {
+          formattedContent += `**Confidence:** ${confidence}%\n\n`;
+        } else {
+          formattedContent += `\n`;
         }
-      : {
+        if (taxonImage) {
+          formattedContent += `![Image of ${commonName}](${taxonImage})\n\n`;
+        }
+
+        // Step 2: Call OpenRouter with context
+        const llmSystemPrompt = `You are a bird expert. A bird has been identified for the user. Your task is to answer the user's follow-up question about this bird. If the user has not asked a specific question, provide a general description based on the user's desired format. Keep your answers concise and to the point.\n\nDesired format:\n- (common name, and optionally scientific name)\n- common description\n- Key visible features (color, shape, size, distinctive marks)`;
+        let llmUserPrompt;
+        if (userMessage && userMessage.trim().length > 0) {
+          llmUserPrompt = `The bird has been identified as ${commonName} (${latinName}). The user has a specific question: \"${userMessage}\". Please answer it.`;
+        } else {
+          llmUserPrompt = `Tell me more about the ${commonName} (${latinName}).`;
+        }
+
+        const llmRequestBody = {
           model: "meta-llama/llama-4-scout:free",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: message }
-          ]
+          messages: [{ role: "system", content: llmSystemPrompt }, ...llmHistory, { role: "user", content: llmUserPrompt }]
         };
 
-    if (!imageFile && !message) return res.status(400).json({ error: 'No image or message provided' });
+        const llmResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify(llmRequestBody)
+        });
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestBody)
-    });
+        if (llmResponse.ok) {
+          const llmData = await llmResponse.json();
+          formattedContent += `\n\n---\n\n${llmData.choices?.[0]?.message?.content || ''}`;
+        }
+      }
+      res.json({ choices: [{ message: { content: formattedContent } }] });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenRouter API error:', errorData);
-      return res.status(response.status).json({ error: 'Error from OpenRouter API', details: errorData });
+    } else {
+      // --- SCENARIO 2: Text only (OpenRouter) ---
+      if (!userMessage || userMessage.trim().length === 0) {
+        return res.status(400).json({ error: 'No image or message provided' });
+      }
+
+      const llmSystemPrompt = `You are a bird expert. Answer the user's question about birds clearly and concisely. Keep your answers brief unless asked for more detail.`;
+      const llmRequestBody = {
+        model: "meta-llama/llama-4-scout:free",
+        messages: [{ role: "system", content: llmSystemPrompt }, ...llmHistory, { role: "user", content: userMessage }]
+      };
+
+      const llmResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify(llmRequestBody)
+      });
+
+      if (!llmResponse.ok) {
+        console.error('OpenRouter API error:', await llmResponse.text());
+        throw new Error('Failed to get response from AI model.');
+      }
+      
+      const llmData = await llmResponse.json();
+      res.json(llmData);
     }
-
-    const data = await response.json();
-    res.json(data);
   } catch (error) {
     console.error('Error in POST /api/newland-chat:', error);
-    res.status(500).json({ error: 'Internal server error', message: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    res.status(500).json({ choices: [{ message: { content: `**Error:** ${errorMessage}` } }] });
   }
 });
 

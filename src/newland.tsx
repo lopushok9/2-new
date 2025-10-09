@@ -242,6 +242,46 @@ export const ResponseOutput: React.FC<{ response: string }> = ({ response }) => 
   );
 };
 
+const LoadingIndicator: React.FC = () => {
+  const dotVariants = {
+    hidden: { opacity: 0.2 },
+    visible: { opacity: 1 },
+  };
+
+  const dotTransition = {
+    duration: 0.5,
+    repeat: Infinity,
+    repeatType: 'reverse' as const,
+    ease: "easeInOut",
+  };
+
+  return (
+    <div className="flex items-center justify-center space-x-1">
+      <motion.span
+        variants={dotVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ ...dotTransition, delay: 0 }}
+        className="h-2 w-2 rounded-full bg-current"
+      />
+      <motion.span
+        variants={dotVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ ...dotTransition, delay: 0.2 }}
+        className="h-2 w-2 rounded-full bg-current"
+      />
+      <motion.span
+        variants={dotVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ ...dotTransition, delay: 0.4 }}
+        className="h-2 w-2 rounded-full bg-current"
+      />
+    </div>
+  );
+};
+
 
 export const ChatMainPage: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -278,6 +318,9 @@ export const ChatMainPage: React.FC = () => {
 
     const formData = new FormData();
     formData.append('message', value);
+    // Send the conversation history to the backend
+    formData.append('history', JSON.stringify(messages));
+
     if (file) {
       formData.append('image', file);
     }
@@ -384,14 +427,22 @@ export const ChatMainPage: React.FC = () => {
                           className="h-24 sm:h-40 w-auto rounded-lg object-cover mb-2"
                         />
                       )}
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          img: ({ ...props }) => (
+                            <img className="rounded-lg shadow-md my-2" {...props} />
+                          ),
+                        }}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 ))}
                 {loading && (
                   <div className="flex justify-start mb-4">
                     <div className="p-3 rounded-lg shadow-md bg-white text-black">
-                      Loading...
+                      <LoadingIndicator />
                     </div>
                   </div>
                 )}

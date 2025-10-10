@@ -393,7 +393,7 @@ app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
       const form = new FormData();
       form.append('image', imageFile.buffer, { filename: imageFile.originalname });
 
-      const response = await axios.post("https://api.inaturalist.org/v1/computervision/score_image", form, {
+      const response = await axios.post("https://api.inaturalist.org/v1/computervision/score_image?locale=en&preferred_place_id=1", form, {
         headers: { 'Authorization': apiToken, ...form.getHeaders() },
       });
 
@@ -404,7 +404,10 @@ app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
         formattedContent = "Could not identify the bird from the image. Please try another photo.";
       } else {
         const taxon = topResult.taxon;
-        const commonName = taxon.english_common_name || taxon.name;
+        const commonName =  taxon?.english_common_name ||
+        taxon?.default_name?.name ||
+        taxon?.preferred_common_name ||
+        taxon?.name;
         const latinName = taxon.name;
         const confidence = topResult.score ? (topResult.score * 100).toFixed(2) : null;
         const wikiUrl = taxon.wikipedia_url;
@@ -422,7 +425,7 @@ app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
         }
 
         // Step 2: Call OpenRouter with context
-        const llmSystemPrompt = `You are a bird expert. A bird has been identified for the user. Your task is to answer the user's follow-up question about this bird. If the user has not asked a specific question, provide a general description based on the user's desired format. Keep your answers concise and to the point.\n\nDesired format:\n- (common name, and optionally scientific name)\n- common description\n- Key visible features (color, shape, size, distinctive marks)`;
+        const llmSystemPrompt = `You are a bird expert. A bird has been identified for the user. Your task is to answer the user's follow-up question about this bird. If the user has not asked a specific question, provide a general description based on the user's desired format. Keep your answers concise and to the point.\n\nDesired format:\n- common description\n- Key visible features (color, shape, size, distinctive marks)`;
         let llmUserPrompt;
         if (userMessage && userMessage.trim().length > 0) {
           llmUserPrompt = `The bird has been identified as ${commonName} (${latinName}). The user has a specific question: \"${userMessage}\". Please answer it.`;

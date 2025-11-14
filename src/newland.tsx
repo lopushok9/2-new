@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, ArrowUp, Info, Map, User, X } from 'lucide-react';
+import { Plus, ArrowUp, Info, Map, User, X, Leaf, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '../lib/utils';
 
@@ -73,7 +73,7 @@ export const SidePanel: React.FC<{
         <motion.aside
           key="panel"
           className={
-            'pointer-events-auto fixed left-0 top-0 z-30 h-full w-[84vw] max-w-sm ' +
+            'pointer-events-auto fixed left-0 top-0 z-50 h-full w-[84vw] max-w-sm ' +
             'bg-white/95 backdrop-blur-md shadow-xl ring-1 ring-border'
           }
           initial={{ x: '-100%' }}
@@ -128,7 +128,7 @@ export const SidePanel: React.FC<{
  */
 export const SearchBar: React.FC<{
   placeholder?: string;
-  onSubmit?: (value: string, file?: File | null) => void;
+  onSubmit?: (value: string, file: File | null, mode: 'inat' | 'combined') => void;
 }> = ({
   placeholder = 'Upload image and ask',
   onSubmit
@@ -136,6 +136,7 @@ export const SearchBar: React.FC<{
   const [value, setValue] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [mode, setMode] = useState<'inat' | 'combined'>('combined');
 
   useEffect(() => {
     if (!file) {
@@ -148,7 +149,7 @@ export const SearchBar: React.FC<{
   }, [file]);
 
   const submit = () => {
-    onSubmit?.(value.trim(), file);
+    onSubmit?.(value.trim(), file, mode);
     setValue('');
     setFile(null);
   };
@@ -177,6 +178,29 @@ export const SearchBar: React.FC<{
             />
             <Plus className="h-5 w-5" />
           </label>
+          <button
+            type="button"
+            onClick={() => setMode(prev => prev === 'combined' ? 'inat' : 'combined')}
+            aria-label="Toggle mode"
+            title={mode === 'combined' ? 'Combined Mode (iNat + AI)' : 'iNaturalist Only Mode'}
+            className={cn(
+              'relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center ' +
+              'justify-center rounded-full text-foreground/60 hover:bg-accent ' +
+              'hover:text-foreground'
+            )}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={mode}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ duration: 0.2 }}
+              >
+                {mode === 'combined' ? <Sparkles className="h-5 w-5 text-purple-500" /> : <Leaf className="h-5 w-5 text-green-500" />}
+              </motion.div>
+            </AnimatePresence>
+          </button>
           <input
             aria-label="Поле ввода запроса"
             value={value}
@@ -197,7 +221,8 @@ export const SearchBar: React.FC<{
             className={
               'inline-flex h-9 w-10 items-center justify-center rounded-full ' +
               'bg-white text-background shadow-sm transition hover:opacity-90 ' +
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60'
+              'focus-visible:outline-none focus-visible:ring-2 ' +
+              'focus-visible:ring-ring/60'
             }
           >
             <ArrowUp className="h-5 w-5" />
@@ -296,6 +321,7 @@ export const ChatMainPage: React.FC = () => {
   }
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling
 
   const menuItems = [
     { id: 'about', label: 'About', icon: <Info className="h-5 w-5" />, href: '/about' },
@@ -303,7 +329,7 @@ export const ChatMainPage: React.FC = () => {
     { id: 'profile', label: 'Profile', icon: <User className="h-5 w-5" />, href: '/profile' }
   ];
 
-  const handleSearchSubmit = async (value: string, file?: File | null) => {
+  const handleSearchSubmit = async (value: string, file: File | null, mode: 'inat' | 'combined') => {
     if (!value.trim() && !file) return;
 
     const userMessage: Message = {
@@ -318,8 +344,8 @@ export const ChatMainPage: React.FC = () => {
 
     const formData = new FormData();
     formData.append('message', value);
-    // Send the conversation history to the backend
     formData.append('history', JSON.stringify(messages));
+    formData.append('mode', mode); // Add mode to the form data
 
     if (file) {
       formData.append('image', file);
@@ -363,11 +389,18 @@ export const ChatMainPage: React.FC = () => {
     }
   };
 
+  // Auto-scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, loading]);
+
   return (
     <div className="relative flex h-screen w-full flex-col bg-background">
       <header
         className={
-          'sticky top-0 z-30 flex h-14 w-full items-center justify-between ' +
+          'fixed top-0 left-0 right-0 z-40 flex h-14 w-full items-center justify-between ' +
           'border-b border-border bg-white/80 px-3 backdrop-blur-md'
         }
       >
@@ -378,89 +411,74 @@ export const ChatMainPage: React.FC = () => {
           </a>
         </div>
       </header>
-      <main className="flex-1 flex flex-col">
+
+      <main className="overflow-y-auto pt-14 pb-72"> {/* Padding for header and footer */}
         {messages.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-2 pb-[14.3rem] sm:p-4">
-            <div className="flex-grow" style={{ flexGrow: 0.5 }} />
+          <div className="flex flex-col items-center justify-center text-center h-full">
             <motion.h1
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="mb-10 text-center text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+              className="mb-10 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
             >
               {title}
             </motion.h1>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05, duration: 0.4 }}
-              className="w-full"
-            >
-              <SearchBar onSubmit={handleSearchSubmit} />
-            </motion.div>
-            <div className="flex-grow" />
           </div>
         ) : (
-          <>
-            <div className="flex-1 overflow-y-auto p-2 sm:p-4">
-              <div className="max-w-3xl mx-auto">
-                {messages.map(msg => (
-                  <div
-                    key={msg.id}
-                    className={cn(
-                      'flex mb-4',
-                      msg.sender === 'user' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'p-3 rounded-lg max-w-md',
-                        msg.sender === 'user'
-                          ? ''
-                          : 'bg-white text-black shadow-md'
-                      )}
-                    >
-                      {msg.imageUrl && (
-                        <img
-                          src={msg.imageUrl}
-                          alt="user upload"
-                          className="h-24 sm:h-40 w-auto rounded-lg object-cover mb-2"
-                        />
-                      )}
-                      <ReactMarkdown
-                        components={{
-                          img: ({ ...props }) => (
-                            <img className="rounded-lg shadow-md my-2" {...props} />
-                          ),
-                        }}
-                      >
-                        {msg.text}
-                      </ReactMarkdown>
-                    </div>
-                  </div>
-                ))}
-                {loading && (
-                  <div className="flex justify-start mb-4">
-                    <div className="p-3 rounded-lg shadow-md bg-white text-black">
-                      <LoadingIndicator />
-                    </div>
-                  </div>
+          <div className="max-w-3xl mx-auto p-2 sm:p-4">
+            {messages.map(msg => (
+              <div
+                key={msg.id}
+                className={cn(
+                  'flex mb-4',
+                  msg.sender === 'user' ? 'justify-end' : 'justify-start'
                 )}
-              </div>
-            </div>
-            <div className="p-2 sm:p-4">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05, duration: 0.4 }}
-                className="w-full"
               >
-                <SearchBar onSubmit={handleSearchSubmit} />
-              </motion.div>
-            </div>
-          </>
+                <div
+                  className={cn(
+                    'p-3 rounded-lg max-w-md',
+                    msg.sender === 'user'
+                      ? ''
+                      : 'bg-white text-black shadow-md'
+                  )}
+                >
+                  {msg.imageUrl && (
+                    <img
+                      src={msg.imageUrl}
+                      alt="user upload"
+                      className="h-24 sm:h-40 w-auto rounded-lg object-cover mb-2"
+                    />
+                  )}
+                  <ReactMarkdown
+                    components={{
+                      img: ({ ...props }) => (
+                        <img className="rounded-lg shadow-md my-2" {...props} />
+                      ),
+                    }}
+                  >
+                    {msg.text}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start mb-4">
+                <div className="p-3 rounded-lg shadow-md bg-white text-black">
+                  <LoadingIndicator />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} /> {/* Scroll target */}
+          </div>
         )}
       </main>
+
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/90 backdrop-blur-md">
+        <div className="p-2 sm:p-4">
+          <SearchBar onSubmit={handleSearchSubmit} />
+        </div>
+      </div>
+
       <SidePanel open={open} onClose={() => setOpen(false)} items={menuItems} />
     </div>
   );
@@ -472,4 +490,3 @@ if (container) {
   const root = ReactDOM.createRoot(container);
   root.render(<ChatMainPage />);
 }
-

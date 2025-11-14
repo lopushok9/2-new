@@ -373,20 +373,21 @@ const FormData = require('form-data');
 app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
   const imageFile = req.file;
   const userMessage = req.body.message;
-  // Parse the history sent from the frontend
+  const mode = req.body.mode || 'combined'; // Default to 'combined'
   const history = req.body.history ? JSON.parse(req.body.history) : [];
 
-  // Map frontend history to the format expected by the LLM API
   const llmHistory = history.map(msg => ({
     role: msg.sender === 'user' ? 'user' : 'assistant',
     content: msg.text
   }));
 
   try {
-    if (imageFile) {
-      // --- SCENARIO 1: Image is present (iNaturalist + OpenRouter) ---
-      
-      // Step 1: Call iNaturalist
+    // Mode 1: iNaturalist Only
+    if (mode === 'inat') {
+      if (!imageFile) {
+        return res.status(400).json({ choices: [{ message: { content: '**Error:** iNaturalist mode requires an image.' } }] });
+      }
+
       const apiToken = process.env.INATURALIST_API_TOKEN;
       if (!apiToken) throw new Error('INATURALIST_API_TOKEN is not configured');
 
@@ -399,18 +400,54 @@ app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
 
       const data = response.data;
       const topResult = data.results?.[0];
+      let formattedContent;
 
       if (!topResult) {
         formattedContent = "Could not identify the bird from the image. Please try another photo.";
       } else {
         const taxon = topResult.taxon;
-        const commonName =  taxon?.english_common_name ||
-        taxon?.default_name?.name ||
-        taxon?.preferred_common_name ||
-        taxon?.name;
+        const commonName = taxon?.english_common_name || taxon?.default_name?.name || taxon?.preferred_common_name || taxon?.name;
         const latinName = taxon.name;
         const confidence = topResult.score ? (topResult.score * 100).toFixed(2) : null;
-        const wikiUrl = taxon.wikipedia_url;
+        const taxonImage = taxon.default_photo?.medium_url;
+
+        formattedContent = `### ${commonName}\n`;
+        formattedContent += `**Scientific Name:** *${latinName}*\n`;
+        if (confidence) {
+          formattedContent += `**Confidence:** ${confidence}%\n\n`;
+        } else {
+          formattedContent += `\n`;
+        }
+        if (taxonImage) {
+          formattedContent += `![Image of ${commonName}](${taxonImage})\n\n`;
+        }
+      }
+      return res.json({ choices: [{ message: { content: formattedContent } }] });
+    }
+
+    // Mode 2: Combined (Existing Logic)
+    if (imageFile) {
+      const apiToken = process.env.INATURALIST_API_TOKEN;
+      if (!apiToken) throw new Error('INATURALIST_API_TOKEN is not configured');
+
+      const form = new FormData();
+      form.append('image', imageFile.buffer, { filename: imageFile.originalname });
+
+      const response = await axios.post("https://api.inaturalist.org/v1/computervision/score_image?locale=en&preferred_place_id=1", form, {
+        headers: { 'Authorization': apiToken, ...form.getHeaders() },
+      });
+
+      const data = response.data;
+      const topResult = data.results?.[0];
+      let formattedContent;
+
+      if (!topResult) {
+        formattedContent = "Could not identify the bird from the image. Please try another photo.";
+      } else {
+        const taxon = topResult.taxon;
+        const commonName = taxon?.english_common_name || taxon?.default_name?.name || taxon?.preferred_common_name || taxon?.name;
+        const latinName = taxon.name;
+        const confidence = topResult.score ? (topResult.score * 100).toFixed(2) : null;
         const taxonImage = taxon.default_photo?.medium_url;
 
         formattedContent = `### ${commonName}\n`;
@@ -424,7 +461,6 @@ app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
           formattedContent += `![Image of ${commonName}](${taxonImage})\n\n`;
         }
 
-        // Step 2: Call OpenRouter with context
         const llmSystemPrompt = `You are a bird expert. A bird has been identified for the user. Your task is to answer the user's follow-up question about this bird. If the user has not asked a specific question, provide a general description based on the user's desired format. Keep your answers concise and to the point.\n\nDesired format:\n- common description\n- Key visible features (color, shape, size, distinctive marks)`;
         let llmUserPrompt;
         if (userMessage && userMessage.trim().length > 0) {
@@ -452,7 +488,7 @@ app.post('/api/newland-chat', upload.single('image'), async (req, res) => {
       res.json({ choices: [{ message: { content: formattedContent } }] });
 
     } else {
-      // --- SCENARIO 2: Text only (OpenRouter) ---
+      // Text only
       if (!userMessage || userMessage.trim().length === 0) {
         return res.status(400).json({ error: 'No image or message provided' });
       }

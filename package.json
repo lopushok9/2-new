@@ -4,8 +4,9 @@
   "description": "Web application with AI agent integration",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "build": "webpack --mode=production",
-    "dev": "webpack --mode=development --watch"
+    "dev": "concurrently \"nodemon server.js\" \"node bot.js\""
   },
   "dependencies": {
     "@solana/wallet-adapter-base": "^0.9.23",
@@ -14,8 +15,10 @@
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.87.6",
     "@supabase/supabase-js": "^2.45.4",
+    "@types/node-telegram-bot-api": "^0.64.12",
     "axios": "^1.12.2",
     "clsx": "^2.1.1",
+    "concurrently": "^9.2.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -26,6 +29,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
     "multer": "^2.0.1",
+    "node-telegram-bot-api": "^0.66.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^10.1.0",

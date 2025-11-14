@@ -184,7 +184,7 @@ export const SearchBar: React.FC<{
             aria-label="Toggle mode"
             title={mode === 'combined' ? 'Combined Mode (iNat + AI)' : 'iNaturalist Only Mode'}
             className={cn(
-              'relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center ' +
+              'relative inline-flex h-10 pr-6 w-10 shrink-0 cursor-pointer items-center ' +
               'justify-center rounded-full text-foreground/60 hover:bg-accent ' +
               'hover:text-foreground'
             )}
@@ -419,7 +419,7 @@ export const ChatMainPage: React.FC = () => {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="mb-10 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+              className="mb-10 text-3xl pt-[10.5rem] font-semibold tracking-tight text-foreground sm:text-4xl"
             >
               {title}
             </motion.h1>

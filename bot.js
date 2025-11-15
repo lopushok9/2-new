@@ -72,10 +72,10 @@ bot.on('photo', async (msg) => {
     }
     const buffer = Buffer.concat(chunks);
 
-    // Call the identification service
-    const identificationResult = await identifyImageWithINat(buffer);
+    // Call the identification service with 'plain' format for the bot
+    const identificationResult = await identifyImageWithINat(buffer, 'plain');
 
-    // Send the result back to the user
+    // Send the result back to the user, allowing for Markdown rendering
     await bot.sendMessage(chatId, identificationResult, { parse_mode: 'Markdown' });
 
   } catch (error) {

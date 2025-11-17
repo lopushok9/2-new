@@ -182,6 +182,55 @@
       .nav-links { gap: 15px; }
       .nav-links a { font-family: Arial, sans-serif; }
     }
+
+    .info-section {
+      padding: 80px 0;
+      background-color: #f9f9f9;
+    }
+
+    .info-blocks-container {
+      display: flex;
+      justify-content: space-around;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .info-block {
+      background-color: white;
+      border-radius: 16px;
+      padding: 85px;
+      flex: 1;
+      min-width: 280px;
+      max-width: 350px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.07);
+      text-align: left;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .info-block:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    }
+
+    .info-block h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1a472a;
+      margin-bottom: 15px;
+      display: block; /* Revert to default block display */
+    }
+
+    .info-block p {
+      font-size: 1rem;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .info-block .icon {
+      width: 28px;
+      height: 28px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -217,6 +266,28 @@
       </div>
     </section>
   </main>
+
+  <section class="info-section">
+    <div class="container">
+            <div class="info-blocks-container">
+              <div class="info-block">
+                <img src="/assets/send.svg" alt="Telegram Bot" class="icon">
+                <h3>TG Bot</h3>
+                <p>Fast and easy way to identify birds with your phone<a href="#">Go to bot</a>.</p>
+              </div>
+              <div class="info-block">
+                <img src="/assets/feather.svg" alt="Inat Mode" class="icon">
+                <h3>Inat Mode</h3>
+                <p>Use the best Comtuter Vision model and help the science</p>
+              </div>
+              <div class="info-block">
+                <img src="/assets/cpu.svg" alt="Research Mode" class="icon">
+                <h3>Research Mode</h3>
+                <p>Combine power of INat with heavy LLM model to get best results</p>
+              </div>
+            </div>
+    </div>
+  </section>
 
   <script>
     const slider = document.querySelector('.slider');

@@ -44,10 +44,19 @@
     }
 
     .logo {
+      display: flex;
+      align-items: center;
       font-size: 35px;
       font-weight: 600;
       letter-spacing: 0.9px;
       font-family: "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .logo-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 15px;
     }
 
     .nav-links {
@@ -237,7 +246,10 @@
   <header class="header">
     <div class="container">
       <nav class="nav">
-        <div class="logo">What bird</div>
+        <div class="logo">
+          <img src="/assets/logo.png" alt="What Bird Logo" class="logo-img">
+          <span>What bird</span>
+        </div>
         <div class="nav-links">
           <a href="/">Get Started</a>
           <a href="/about">About</a>

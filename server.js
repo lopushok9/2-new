@@ -119,7 +119,7 @@ const authenticateFlexible = async (req, res, next) => {
       return next();
     }
   } catch (solanaError) {
-     console.log('Auth-Flexible: Failed to decode as Solana token.', solanaError.message);
+    console.log('Auth-Flexible: Failed to decode as Solana token.', solanaError.message);
   }
 
   // 3. Если ни один из способов не сработал
@@ -151,25 +151,25 @@ If you are unsure, mention up to 2–3 possible species and suggest what additio
 
     let requestBody = imageFile
       ? {
-          model: "meta-llama/llama-4-maverick:free",
-          messages: [
-            { role: "system", content: systemPrompt },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: message || "What is in this image?" },
-                { type: "image_url", image_url: { url: `data:${imageFile.mimetype};base64,${imageFile.buffer.toString('base64')}` } }
-              ]
-            }
-          ]
-        }
+        model: "x-ai/grok-4.1-fast:free",
+        messages: [
+          { role: "system", content: systemPrompt },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: message || "What is in this image?" },
+              { type: "image_url", image_url: { url: `data:${imageFile.mimetype};base64,${imageFile.buffer.toString('base64')}` } }
+            ]
+          }
+        ]
+      }
       : {
-          model: "meta-llama/llama-4-scout:free",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: message }
-          ]
-        };
+        model: "x-ai/grok-4.1-fast:free",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message }
+        ]
+      };
 
     if (!imageFile && !message) return res.status(400).json({ error: 'No image or message provided' });
 
@@ -263,7 +263,7 @@ app.post('/api/signin', async (req, res) => {
 app.post('/api/solana-auth', async (req, res) => {
   try {
     const { publicKey, message, signature } = req.body;
-    
+
     if (!publicKey || !message || !signature) {
       return res.status(400).json({ error: 'Missing required fields: publicKey, message, signature' });
     }
@@ -274,7 +274,7 @@ app.post('/api/solana-auth', async (req, res) => {
     const messageBytes = new TextEncoder().encode(message);
     const publicKeyBytes = new PublicKey(publicKey).toBytes();
     const signatureBytes = new Uint8Array(signature);
-    
+
     const isValidSignature = nacl.sign.detached.verify(
       messageBytes,
       signatureBytes,
@@ -290,7 +290,7 @@ app.post('/api/solana-auth', async (req, res) => {
     const truncatedAddress = `${publicKey.slice(0, 6)}...${publicKey.slice(-4)}`;
     const userName = `Solana User ${truncatedAddress}`;
     const userEmail = `solana_${publicKey}@whatbird.app`;
-    
+
     console.log('Solana authentication successful for:', userName);
 
     // For simplicity, we'll create a temporary token
@@ -333,10 +333,10 @@ app.post('/api/solana-auth', async (req, res) => {
 app.get('/profile', authenticateFlexible, async (req, res) => {
   try {
     console.log('Fetching profile for user:', req.user.email);
-    
+
     // Для Solana пользователей используем данные из токена
     if (req.user.user_metadata?.auth_method === 'solana') {
-      res.render('profile', { 
+      res.render('profile', {
         user: {
           name: req.user.user_metadata.name,
           email: req.user.email,
@@ -357,7 +357,7 @@ app.get('/profile', authenticateFlexible, async (req, res) => {
 
     if (error) throw new Error(error.message);
 
-    res.render('profile', { 
+    res.render('profile', {
       user: data,
       solanaConnected: !!data.solana_public_key,
       authMethod: data.auth_method || 'email'
